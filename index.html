@@ -3,41 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Suivi coureur</title>
+<title>ATHIA — Suivi coureur</title>
 <style>
-  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; background:#0f1115; color:#e6edf3; margin:0; padding:20px; }
-  h1 { font-size: 20px; margin-bottom: 4px; }
-  .sub { color:#8b949e; font-size: 13px; margin-bottom: 20px; }
-  table { width:100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #21262d; font-size: 14px; }
-  th { color:#8b949e; font-weight: 500; font-size: 12px; text-transform: uppercase; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .empty, .error { color:#8b949e; padding: 40px 0; text-align:center; }
-  .error { color:#ff6b6b; }
-  .week-row { cursor: pointer; }
-  .week-row:hover { background: #161b22; }
-  .chev { display:inline-block; width:14px; color:#8b949e; }
-  .detail-row td { padding: 0; border-bottom: 1px solid #21262d; }
-  .detail-wrap { display:none; padding: 4px 8px 14px 26px; }
-  .detail-wrap.open { display:block; }
-  .day-table { width:100%; border-collapse: collapse; }
-  .day-table th { font-size: 10px; padding: 6px 6px; border-bottom: 1px solid #21262d; }
-  .day-table td { font-size: 13px; padding: 6px 6px; border-bottom: none; color:#c9d1d9; }
-  .day-table tr:nth-child(odd) td { background: #14181f; }
-  .muted { color:#5f5e5a; }
-  .foot { font-size: 12px; color:#5f5e5a; margin-top: 20px; border-top: 1px solid #21262d; padding-top: 12px; }
+  :root {
+    --teal: #0F6E56;
+    --teal-light-bg: #E1F5EE;
+    --teal-light-text: #9FE1CB;
+    --text-primary: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --text-hint: #8a8a8a;
+    --border: #e5e5e5;
+    --border-light: #f0f0f0;
+    --row2-bg: #fafafa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #f4f5f4;
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0 0 40px;
+  }
+  .banner {
+    background: var(--teal);
+    padding: 20px 20px 18px;
+    color: #fff;
+  }
+  .banner .brand { font-size: 20px; font-weight: 600; letter-spacing: 2px; margin: 0; }
+  .banner .sub { color: var(--teal-light-text); font-size: 12.5px; margin-top: 4px; }
+  .container { max-width: 680px; margin: 0 auto; padding: 18px 16px 0; }
+  .empty, .error { color: var(--text-muted); padding: 60px 20px; text-align: center; font-size: 14px; }
+  .error { color: #a32d2d; }
+  .week-card {
+    background: #fff;
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .week-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+  }
+  .week-head:hover { background: #fafafa; }
+  .week-head .label { font-size: 14px; font-weight: 600; }
+  .chev { display: inline-block; margin-left: 8px; color: var(--text-hint); font-size: 11px; transition: transform 0.15s; }
+  .chev.open { transform: rotate(90deg); }
+  .week-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 0.5px solid var(--border);
+  }
+  .week-stats > div { padding: 10px 6px; text-align: center; border-right: 0.5px solid var(--border); }
+  .week-stats > div:last-child { border-right: none; }
+  .week-stats .stat-label { font-size: 10px; color: var(--text-muted); }
+  .week-stats .stat-value { font-size: 16px; font-weight: 600; margin-top: 2px; }
+  .week-stats .stat-value.accent { color: var(--teal); }
+  .detail-wrap { display: none; padding: 12px 16px 14px; border-top: 0.5px solid var(--border); }
+  .detail-wrap.open { display: block; }
+  .day-card {
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .day-card:last-child { margin-bottom: 0; }
+  .day-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 12px;
+    background: var(--teal-light-bg);
+  }
+  .day-head .day-title { font-size: 12.5px; font-weight: 600; }
+  .day-head .day-type { font-size: 10.5px; color: var(--teal); }
+  .metric-row {
+    display: grid;
+    border-top: 0.5px solid var(--border-light);
+  }
+  .metric-row.row2 { background: var(--row2-bg); }
+  .metric-row > div { padding: 8px 4px; text-align: center; border-right: 0.5px solid var(--border-light); }
+  .metric-row > div:last-child { border-right: none; }
+  .metric-label { font-size: 9px; color: var(--text-hint); }
+  .metric-value { font-size: 11.5px; font-weight: 600; margin-top: 2px; }
+  .metric-value.muted { color: var(--text-hint); font-weight: 400; }
+  .foot { max-width: 680px; margin: 18px auto 0; padding: 0 16px; font-size: 11.5px; color: var(--text-hint); }
 </style>
 </head>
 <body>
-  <h1>Suivi de charge d'entra&icirc;nement</h1>
-  <div class="sub" id="subtitle">Chargement...</div>
-  <table id="table" style="display:none">
-    <thead>
-      <tr><th></th><th>Semaine</th><th class="num">Sorties</th><th class="num">Dur&eacute;e</th><th class="num">Distance</th><th class="num">Charge</th></tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-  <div class="foot">Cliquez sur une semaine pour voir le d&eacute;tail par jour.</div>
+  <div class="banner">
+    <p class="brand">ATHIA</p>
+    <div class="sub" id="subtitle">Chargement...</div>
+  </div>
+  <div class="container" id="container"></div>
+  <div class="foot" id="foot" style="display:none">Touchez une semaine pour voir le détail par jour.</div>
 
   <script>
     const SUPABASE_URL = "https://zhemtpvyhkbmjmydocux.supabase.co";
@@ -45,7 +107,7 @@
 
     function isoWeekLabel(dateStr) {
       const d = new Date(dateStr + "T00:00:00");
-      const day = (d.getDay() + 6) % 7; // lundi = 0
+      const day = (d.getDay() + 6) % 7;
       const monday = new Date(d);
       monday.setDate(d.getDate() - day);
       const dd = String(monday.getDate()).padStart(2, "0");
@@ -62,16 +124,24 @@
     }
 
     function fmt(v, unit) {
-      return (v === null || v === undefined) ? '<span class="muted">-</span>' : `${v}${unit}`;
+      return (v === null || v === undefined)
+        ? '<span class="metric-value muted">--</span>'
+        : `<span class="metric-value">${v}${unit}</span>`;
+    }
+
+    function dureeLabel(min) {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return h > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${m} min`;
     }
 
     async function charger() {
       const params = new URLSearchParams(window.location.search);
       const token = params.get("token");
       const subtitle = document.getElementById("subtitle");
+      const container = document.getElementById("container");
 
       if (!token) {
-        subtitle.textContent = "";
         subtitle.innerHTML = '<span class="error">Lien invalide : jeton manquant.</span>';
         return;
       }
@@ -79,10 +149,7 @@
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_coach_summary`, {
           method: "POST",
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Content-Type": "application/json"
-          },
+          headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
           body: JSON.stringify({ p_token: token })
         });
 
@@ -90,7 +157,8 @@
         const rows = await res.json();
 
         if (!rows || rows.length === 0) {
-          subtitle.innerHTML = '<span class="empty">Lien valide, mais aucune sortie enregistr&eacute;e pour le moment.</span>';
+          subtitle.textContent = "";
+          container.innerHTML = '<div class="empty">Lien valide, mais aucune sortie enregistrée pour le moment.</div>';
           return;
         }
 
@@ -113,73 +181,61 @@
 
         const semainesTriees = [...semaines.entries()].sort((a, b) => b[0].localeCompare(a[0]));
 
-        const tbody = document.getElementById("tbody");
         semainesTriees.forEach(([key, s], idx) => {
-          const heures = Math.floor(s.dureeMin / 60);
-          const minutes = s.dureeMin % 60;
+          const card = document.createElement("div");
+          card.className = "week-card";
 
-          const tr = document.createElement("tr");
-          tr.className = "week-row";
-          tr.innerHTML = `
-            <td><span class="chev" id="chev-${idx}">&#9656;</span></td>
-            <td>${s.label}</td>
-            <td class="num">${s.sorties}</td>
-            <td class="num">${heures}h${String(minutes).padStart(2, "0")}</td>
-            <td class="num">${s.distanceKm.toFixed(0)} km</td>
-            <td class="num">${s.charge}</td>
+          const head = document.createElement("div");
+          head.className = "week-head";
+          head.innerHTML = `<span class="label">${s.label}</span><span class="chev" id="chev-${idx}">&#9656;</span>`;
+          head.addEventListener("click", () => toggle(idx));
+          card.appendChild(head);
+
+          const stats = document.createElement("div");
+          stats.className = "week-stats";
+          stats.innerHTML = `
+            <div><div class="stat-label">Charge</div><div class="stat-value accent">${s.charge}</div></div>
+            <div><div class="stat-label">Durée</div><div class="stat-value">${dureeLabel(s.dureeMin)}</div></div>
+            <div><div class="stat-label">Distance</div><div class="stat-value">${s.distanceKm.toFixed(0)} km</div></div>
+            <div><div class="stat-label">Sorties</div><div class="stat-value">${s.sorties}</div></div>
           `;
-          tr.addEventListener("click", () => toggle(idx));
-          tbody.appendChild(tr);
+          card.appendChild(stats);
 
-          const trDetail = document.createElement("tr");
-          trDetail.className = "detail-row";
-          const td = document.createElement("td");
-          td.colSpan = 6;
           const wrap = document.createElement("div");
           wrap.className = "detail-wrap";
           wrap.id = `detail-${idx}`;
 
-          const dayTable = document.createElement("table");
-          dayTable.className = "day-table";
-          dayTable.innerHTML = `
-            <thead>
-              <tr>
-                <th>Jour</th><th>Type</th>
-                <th class="num">Dur&eacute;e</th><th class="num">Distance</th><th class="num">Charge</th>
-                <th class="num">Puiss. moy</th><th class="num">Puiss. max</th>
-                <th class="num">FC moy</th><th class="num">FC max</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          `;
-          const dayBody = dayTable.querySelector("tbody");
           for (const j of s.jours) {
-            const jh = Math.floor((j.duration_min || 0) / 60);
-            const jm = (j.duration_min || 0) % 60;
-            const jr = document.createElement("tr");
-            jr.innerHTML = `
-              <td>${jourLabel(j.activity_date)}</td>
-              <td>${j.type || '-'}</td>
-              <td class="num">${jh}h${String(jm).padStart(2, "0")}</td>
-              <td class="num">${(j.distance_km || 0).toFixed(1)} km</td>
-              <td class="num">${j.charge || 0}</td>
-              <td class="num">${fmt(j.avg_power, ' W')}</td>
-              <td class="num">${fmt(j.max_power, ' W')}</td>
-              <td class="num">${fmt(j.avg_hr, ' bpm')}</td>
-              <td class="num">${fmt(j.max_hr, ' bpm')}</td>
+            const dayCard = document.createElement("div");
+            dayCard.className = "day-card";
+            dayCard.innerHTML = `
+              <div class="day-head">
+                <span class="day-title">${jourLabel(j.activity_date)}</span>
+                <span class="day-type">${j.type || "Sortie"}</span>
+              </div>
+              <div class="metric-row">
+                <div><div class="metric-label">Durée</div>${fmt(dureeLabel(j.duration_min || 0), "")}</div>
+                <div><div class="metric-label">Distance</div>${fmt((j.distance_km || 0).toFixed(1), " km")}</div>
+                <div><div class="metric-label">Puiss. moy</div>${fmt(j.avg_power, " W")}</div>
+                <div><div class="metric-label">FC moy</div>${fmt(j.avg_hr, " bpm")}</div>
+              </div>
+              <div class="metric-row row2">
+                <div><div class="metric-label">Puiss. max</div>${fmt(j.max_power, " W")}</div>
+                <div><div class="metric-label">FC max</div>${fmt(j.max_hr, " bpm")}</div>
+                <div><div class="metric-label">Charge</div>${fmt(j.charge, "")}</div>
+              </div>
             `;
-            dayBody.appendChild(jr);
+            wrap.appendChild(dayCard);
           }
-          wrap.appendChild(dayTable);
-          td.appendChild(wrap);
-          trDetail.appendChild(td);
-          tbody.appendChild(trDetail);
+          card.appendChild(wrap);
+          container.appendChild(card);
         });
 
         subtitle.textContent = `${rows.length} sortie(s) sur les 12 derniers mois`;
-        document.getElementById("table").style.display = "table";
+        document.getElementById("foot").style.display = "block";
       } catch (e) {
-        subtitle.innerHTML = '<span class="error">Impossible de charger les donn&eacute;es. R&eacute;essaie plus tard.</span>';
+        subtitle.textContent = "";
+        container.innerHTML = '<div class="error">Impossible de charger les données. Réessaie plus tard.</div>';
       }
     }
 
@@ -187,7 +243,7 @@
       const wrap = document.getElementById(`detail-${idx}`);
       const chev = document.getElementById(`chev-${idx}`);
       const open = wrap.classList.toggle("open");
-      chev.innerHTML = open ? "&#9662;" : "&#9656;";
+      chev.classList.toggle("open", open);
     }
 
     charger();
