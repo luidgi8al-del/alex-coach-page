@@ -15,6 +15,8 @@
     --border: #e5e5e5;
     --border-light: #f0f0f0;
     --row2-bg: #fafafa;
+    --blue: #185FA5;
+    --orange: #BA7517;
   }
   * { box-sizing: border-box; }
   body {
@@ -26,14 +28,71 @@
   }
   .banner {
     background: var(--teal);
-    padding: 20px 20px 18px;
+    padding: 20px 20px 14px;
     color: #fff;
   }
   .banner .brand { font-size: 20px; font-weight: 600; letter-spacing: 2px; margin: 0; }
   .banner .sub { color: var(--teal-light-text); font-size: 12.5px; margin-top: 4px; }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 20px;
+    margin-top: 14px;
+    overflow-x: auto;
+  }
+  .tab {
+    background: rgba(255,255,255,0.14);
+    color: var(--teal-light-text);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px 20px 0 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab.active { background: #f4f5f4; color: var(--teal); }
   .container { max-width: 680px; margin: 0 auto; padding: 18px 16px 0; }
+  .panel { display: none; }
+  .panel.active { display: block; }
   .empty, .error { color: var(--text-muted); padding: 60px 20px; text-align: center; font-size: 14px; }
   .error { color: #a32d2d; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: #fff;
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .stat-grid > div { padding: 14px 6px; text-align: center; border-right: 0.5px solid var(--border); }
+  .stat-grid > div:last-child { border-right: none; }
+  .stat-label { font-size: 10px; color: var(--text-muted); }
+  .stat-value { font-size: 18px; font-weight: 600; margin-top: 3px; }
+  .stat-value.teal { color: var(--teal); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.orange { color: var(--orange); }
+
+  .card {
+    background: #fff;
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .card h3 { font-size: 13px; font-weight: 600; margin: 0 0 10px; }
+  .legend { display: flex; gap: 14px; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  .zone-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 12px; }
+  .zone-row .zone-label { width: 76px; color: var(--text-muted); flex-shrink: 0; }
+  .zone-row .zone-bar-wrap { flex: 1; height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+  .zone-row .zone-bar { height: 100%; background: var(--teal); border-radius: 4px; }
+  .zone-row .zone-value { width: 56px; text-align: right; font-weight: 600; flex-shrink: 0; }
+
   .week-card {
     background: #fff;
     border: 0.5px solid var(--border);
@@ -109,15 +168,38 @@
     white-space: nowrap;
   }
   .month-header .month-line { flex: 1; height: 1px; background: var(--border); }
+
+  .santé-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 0.5px solid var(--border-light);
+    font-size: 13px;
+  }
+  .santé-row:first-child { border-top: none; }
+  .santé-row .santé-date { color: var(--text-muted); }
+  .santé-row .santé-values { display: flex; gap: 16px; font-weight: 600; }
 </style>
 </head>
 <body>
   <div class="banner">
     <p class="brand">ATHIA</p>
     <div class="sub" id="subtitle">Chargement...</div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="apercu">Aperçu</button>
+      <button class="tab" data-tab="planning">Planning</button>
+      <button class="tab" data-tab="zones">Zones</button>
+      <button class="tab" data-tab="sante">Santé</button>
+    </div>
   </div>
-  <div class="container" id="container"></div>
-  <div class="foot" id="foot" style="display:none">Touchez une semaine pour voir le détail par jour.</div>
+  <div class="container">
+    <div class="panel active" id="panel-apercu"></div>
+    <div class="panel" id="panel-planning"></div>
+    <div class="panel" id="panel-zones"></div>
+    <div class="panel" id="panel-sante"></div>
+  </div>
+  <div class="foot" id="foot" style="display:none">Onglet Planning : touche une semaine pour voir le détail par jour.</div>
 
   <script>
     const SUPABASE_URL = "https://zhemtpvyhkbmjmydocux.supabase.co";
@@ -153,122 +235,210 @@
       return h > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${m} min`;
     }
 
-    async function charger() {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get("token");
-      const subtitle = document.getElementById("subtitle");
-      const container = document.getElementById("container");
+    function setupTabs() {
+      document.querySelectorAll(".tab").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(`panel-${btn.dataset.tab}`).classList.add("active");
+          document.getElementById("foot").style.display = btn.dataset.tab === "planning" ? "block" : "none";
+        });
+      });
+    }
 
-      if (!token) {
-        subtitle.innerHTML = '<span class="error">Lien invalide : jeton manquant.</span>';
+    function renderApercu(metricsRows) {
+      const panel = document.getElementById("panel-apercu");
+      if (!metricsRows || metricsRows.length === 0) {
+        panel.innerHTML = '<div class="empty">Pas encore de données de forme partagées.</div>';
+        return;
+      }
+      const dernier = metricsRows[0];
+      const stats = document.createElement("div");
+      stats.className = "stat-grid";
+      stats.innerHTML = `
+        <div><div class="stat-label">CTL</div><div class="stat-value blue">${dernier.ctl != null ? Math.round(dernier.ctl) : "--"}</div></div>
+        <div><div class="stat-label">ATL</div><div class="stat-value orange">${dernier.atl != null ? Math.round(dernier.atl) : "--"}</div></div>
+        <div><div class="stat-label">TSB</div><div class="stat-value teal">${dernier.tsb != null ? (dernier.tsb >= 0 ? "+" : "") + Math.round(dernier.tsb) : "--"}</div></div>
+        <div><div class="stat-label">Date</div><div class="stat-value" style="font-size:13px">${jourLabel(dernier.date)}</div></div>
+      `;
+      panel.appendChild(stats);
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <h3>Forme au fil du temps</h3>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--blue)"></span>CTL (fitness)</span>
+          <span><span class="dot" style="background:var(--orange)"></span>ATL (fatigue)</span>
+          <span><span class="dot" style="background:var(--teal)"></span>TSB (forme)</span>
+        </div>
+        <canvas id="chart-forme" width="600" height="220" style="width:100%;height:180px"></canvas>
+      `;
+      panel.appendChild(card);
+
+      drawFormeChart(metricsRows.slice(0, 60).reverse());
+    }
+
+    function drawFormeChart(rows) {
+      const canvas = document.getElementById("chart-forme");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      if (rows.length < 2) return;
+
+      const allValues = rows.flatMap(r => [r.ctl || 0, r.atl || 0, r.tsb || 0]);
+      const minV = Math.min(...allValues, 0);
+      const maxV = Math.max(...allValues, 10);
+      const pad = 10;
+      const x = i => pad + (i / (rows.length - 1)) * (w - pad * 2);
+      const y = v => h - pad - ((v - minV) / (maxV - minV || 1)) * (h - pad * 2);
+
+      const drawLine = (key, color) => {
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        rows.forEach((r, i) => {
+          const v = r[key];
+          if (v === null || v === undefined) return;
+          const px = x(i), py = y(v);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+      };
+      drawLine("ctl", "#185FA5");
+      drawLine("atl", "#BA7517");
+      drawLine("tsb", "#0F6E56");
+    }
+
+    function renderZones(zonesRow) {
+      const panel = document.getElementById("panel-zones");
+      if (!zonesRow || (!zonesRow.power_zones?.length && !zonesRow.hr_zones?.length)) {
+        panel.innerHTML = '<div class="empty">Pas encore de répartition par zones partagée.</div>';
+        return;
+      }
+      const renderZoneCard = (title, zones) => {
+        if (!zones || zones.length === 0) return "";
+        const maxMin = Math.max(...zones.map(z => z.minutes), 1);
+        const rows = zones.map(z => `
+          <div class="zone-row">
+            <div class="zone-label">${z.label}</div>
+            <div class="zone-bar-wrap"><div class="zone-bar" style="width:${(z.minutes / maxMin * 100).toFixed(0)}%"></div></div>
+            <div class="zone-value">${dureeLabel(z.minutes)}</div>
+          </div>
+        `).join("");
+        return `<div class="card"><h3>${title}</h3>${rows}</div>`;
+      };
+      panel.innerHTML = renderZoneCard("Zones de puissance", zonesRow.power_zones) + renderZoneCard("Zones de fréquence cardiaque", zonesRow.hr_zones);
+    }
+
+    function renderSante(metricsRows) {
+      const panel = document.getElementById("panel-sante");
+      const avecSante = (metricsRows || []).filter(r => r.sleep_hours != null || r.resting_hr != null);
+      if (avecSante.length === 0) {
+        panel.innerHTML = '<div class="empty">Pas encore de données de santé partagées.</div>';
+        return;
+      }
+      const rows = avecSante.slice(0, 30).map(r => `
+        <div class="santé-row">
+          <span class="santé-date">${jourLabel(r.date)}</span>
+          <span class="santé-values">
+            ${r.sleep_hours != null ? `<span>${r.sleep_hours.toFixed(1)} h</span>` : ""}
+            ${r.resting_hr != null ? `<span>${r.resting_hr} bpm</span>` : ""}
+          </span>
+        </div>
+      `).join("");
+      panel.innerHTML = `<div class="card"><h3>Sommeil et FC repos</h3>${rows}</div>`;
+    }
+
+    function renderPlanning(rows) {
+      const panel = document.getElementById("panel-planning");
+      if (!rows || rows.length === 0) {
+        panel.innerHTML = '<div class="empty">Lien valide, mais aucune sortie enregistrée pour le moment.</div>';
         return;
       }
 
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_coach_summary`, {
-          method: "POST",
-          headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
-          body: JSON.stringify({ p_token: token })
-        });
-
-        if (!res.ok) throw new Error("Requete refusee");
-        const rows = await res.json();
-
-        if (!rows || rows.length === 0) {
-          subtitle.textContent = "";
-          container.innerHTML = '<div class="empty">Lien valide, mais aucune sortie enregistrée pour le moment.</div>';
-          return;
+      const semaines = new Map();
+      for (const r of rows) {
+        const w = isoWeekLabel(r.activity_date);
+        if (!semaines.has(w.key)) {
+          semaines.set(w.key, { label: w.label, sorties: 0, dureeMin: 0, distanceKm: 0, charge: 0, jours: [] });
         }
-
-        const semaines = new Map();
-        for (const r of rows) {
-          const w = isoWeekLabel(r.activity_date);
-          if (!semaines.has(w.key)) {
-            semaines.set(w.key, { label: w.label, sorties: 0, dureeMin: 0, distanceKm: 0, charge: 0, jours: [] });
-          }
-          const s = semaines.get(w.key);
-          s.sorties += 1;
-          s.dureeMin += r.duration_min || 0;
-          s.distanceKm += r.distance_km || 0;
-          s.charge += r.charge || 0;
-          s.jours.push(r);
-        }
-        for (const [, s] of semaines) {
-          s.jours.sort((a, b) => b.activity_date.localeCompare(a.activity_date));
-        }
-
-        const semainesTriees = [...semaines.entries()].sort((a, b) => b[0].localeCompare(a[0]));
-
-        const MOIS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-                      "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-        let moisCourant = "";
-
-        semainesTriees.forEach(([key, s], idx) => {
-          const dMois = new Date(key + "T00:00:00");
-          const moisLabel = `${MOIS[dMois.getMonth()]} ${dMois.getFullYear()}`;
-          if (moisLabel !== moisCourant) {
-            moisCourant = moisLabel;
-            const mh = document.createElement("div");
-            mh.className = "month-header";
-            mh.innerHTML = `<span class="month-label">${moisLabel}</span><span class="month-line"></span>`;
-            container.appendChild(mh);
-          }
-
-          const card = document.createElement("div");
-          card.className = "week-card";
-
-          const head = document.createElement("div");
-          head.className = "week-head";
-          head.innerHTML = `<span class="label">${s.label}</span><span class="chev" id="chev-${idx}">&#9656;</span>`;
-          head.addEventListener("click", () => toggle(idx));
-          card.appendChild(head);
-
-          const stats = document.createElement("div");
-          stats.className = "week-stats";
-          stats.innerHTML = `
-            <div><div class="stat-label">Charge</div><div class="stat-value accent">${s.charge}</div></div>
-            <div><div class="stat-label">Durée</div><div class="stat-value">${dureeLabel(s.dureeMin)}</div></div>
-            <div><div class="stat-label">Distance</div><div class="stat-value">${s.distanceKm.toFixed(0)} km</div></div>
-            <div><div class="stat-label">Sorties</div><div class="stat-value">${s.sorties}</div></div>
-          `;
-          card.appendChild(stats);
-
-          const wrap = document.createElement("div");
-          wrap.className = "detail-wrap";
-          wrap.id = `detail-${idx}`;
-
-          for (const j of s.jours) {
-            const dayCard = document.createElement("div");
-            dayCard.className = "day-card";
-            dayCard.innerHTML = `
-              <div class="day-head">
-                <span class="day-title">${jourLabel(j.activity_date)}</span>
-                <span class="day-type">${j.type || "Sortie"}</span>
-              </div>
-              <div class="metric-row">
-                <div><div class="metric-label">Durée</div>${fmt(dureeLabel(j.duration_min || 0), "")}</div>
-                <div><div class="metric-label">Distance</div>${fmt((j.distance_km || 0).toFixed(1), " km")}</div>
-                <div><div class="metric-label">Puiss. moy</div>${fmt(j.avg_power, " W")}</div>
-                <div><div class="metric-label">FC moy</div>${fmt(j.avg_hr, " bpm")}</div>
-              </div>
-              <div class="metric-row row2">
-                <div><div class="metric-label">Puiss. max</div>${fmt(j.max_power, " W")}</div>
-                <div><div class="metric-label">FC max</div>${fmt(j.max_hr, " bpm")}</div>
-                <div><div class="metric-label">Charge</div>${fmt(j.charge, "")}</div>
-              </div>
-            `;
-            wrap.appendChild(dayCard);
-          }
-          card.appendChild(wrap);
-          container.appendChild(card);
-        });
-
-        subtitle.textContent = `${rows.length} sortie(s) sur les 12 derniers mois`;
-        document.getElementById("foot").style.display = "block";
-      } catch (e) {
-        subtitle.textContent = "";
-        container.innerHTML = '<div class="error">Impossible de charger les données. Réessaie plus tard.</div>';
+        const s = semaines.get(w.key);
+        s.sorties += 1;
+        s.dureeMin += r.duration_min || 0;
+        s.distanceKm += r.distance_km || 0;
+        s.charge += r.charge || 0;
+        s.jours.push(r);
       }
+      for (const [, s] of semaines) {
+        s.jours.sort((a, b) => b.activity_date.localeCompare(a.activity_date));
+      }
+
+      const semainesTriees = [...semaines.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+      const MOIS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+                    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+      let moisCourant = "";
+
+      semainesTriees.forEach(([key, s], idx) => {
+        const dMois = new Date(key + "T00:00:00");
+        const moisLabel = `${MOIS[dMois.getMonth()]} ${dMois.getFullYear()}`;
+        if (moisLabel !== moisCourant) {
+          moisCourant = moisLabel;
+          const mh = document.createElement("div");
+          mh.className = "month-header";
+          mh.innerHTML = `<span class="month-label">${moisLabel}</span><span class="month-line"></span>`;
+          panel.appendChild(mh);
+        }
+
+        const card = document.createElement("div");
+        card.className = "week-card";
+
+        const head = document.createElement("div");
+        head.className = "week-head";
+        head.innerHTML = `<span class="label">${s.label}</span><span class="chev" id="chev-${idx}">&#9656;</span>`;
+        head.addEventListener("click", () => toggle(idx));
+        card.appendChild(head);
+
+        const stats = document.createElement("div");
+        stats.className = "week-stats";
+        stats.innerHTML = `
+          <div><div class="stat-label">Charge</div><div class="stat-value accent">${s.charge}</div></div>
+          <div><div class="stat-label">Durée</div><div class="stat-value">${dureeLabel(s.dureeMin)}</div></div>
+          <div><div class="stat-label">Distance</div><div class="stat-value">${s.distanceKm.toFixed(0)} km</div></div>
+          <div><div class="stat-label">Sorties</div><div class="stat-value">${s.sorties}</div></div>
+        `;
+        card.appendChild(stats);
+
+        const wrap = document.createElement("div");
+        wrap.className = "detail-wrap";
+        wrap.id = `detail-${idx}`;
+
+        for (const j of s.jours) {
+          const dayCard = document.createElement("div");
+          dayCard.className = "day-card";
+          dayCard.innerHTML = `
+            <div class="day-head">
+              <span class="day-title">${jourLabel(j.activity_date)}</span>
+              <span class="day-type">${j.type || "Sortie"}</span>
+            </div>
+            <div class="metric-row">
+              <div><div class="metric-label">Durée</div>${fmt(dureeLabel(j.duration_min || 0), "")}</div>
+              <div><div class="metric-label">Distance</div>${fmt((j.distance_km || 0).toFixed(1), " km")}</div>
+              <div><div class="metric-label">Puiss. moy</div>${fmt(j.avg_power, " W")}</div>
+              <div><div class="metric-label">FC moy</div>${fmt(j.avg_hr, " bpm")}</div>
+            </div>
+            <div class="metric-row row2">
+              <div><div class="metric-label">Puiss. max</div>${fmt(j.max_power, " W")}</div>
+              <div><div class="metric-label">FC max</div>${fmt(j.max_hr, " bpm")}</div>
+              <div><div class="metric-label">Charge</div>${fmt(j.charge, "")}</div>
+            </div>
+          `;
+          wrap.appendChild(dayCard);
+        }
+        card.appendChild(wrap);
+        panel.appendChild(card);
+      });
     }
 
     function toggle(idx) {
@@ -276,6 +446,50 @@
       const chev = document.getElementById(`chev-${idx}`);
       const open = wrap.classList.toggle("open");
       chev.classList.toggle("open", open);
+    }
+
+    async function rpc(name, token) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+          method: "POST",
+          headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({ p_token: token })
+        });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) { return null; }
+    }
+
+    async function charger() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+      const subtitle = document.getElementById("subtitle");
+
+      if (!token) {
+        subtitle.innerHTML = '<span class="error">Lien invalide : jeton manquant.</span>';
+        return;
+      }
+
+      setupTabs();
+
+      const [summaryRows, metricsRows, zonesRows] = await Promise.all([
+        rpc("get_coach_summary", token),
+        rpc("get_coach_metrics", token),
+        rpc("get_coach_zones", token)
+      ]);
+
+      if (summaryRows === null && metricsRows === null && zonesRows === null) {
+        subtitle.textContent = "";
+        document.getElementById("panel-apercu").innerHTML = '<div class="error">Impossible de charger les données. Réessaie plus tard.</div>';
+        return;
+      }
+
+      renderApercu(metricsRows || []);
+      renderPlanning(summaryRows || []);
+      renderZones((zonesRows && zonesRows[0]) || null);
+      renderSante(metricsRows || []);
+
+      subtitle.textContent = `${(summaryRows || []).length} sortie(s) sur les 12 derniers mois`;
     }
 
     charger();
