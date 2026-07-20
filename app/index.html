@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATHIA — Coach IA pour cyclistes</title>
+<style>
+  :root { --teal: #12A594; --text-primary: #1a1a1a; --text-muted: #6b6b6b; --border: #e5e5e5; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #f4f5f4;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .hero {
+    background: var(--teal);
+    color: #fff;
+    padding: 64px 20px 56px;
+    text-align: center;
+  }
+  .hero img { width: 96px; height: 96px; border-radius: 22px; margin-bottom: 20px; }
+  .hero h1 { font-size: 32px; letter-spacing: 4px; margin: 0 0 10px; }
+  .hero p { font-size: 16px; opacity: 0.92; max-width: 480px; margin: 0 auto; }
+  .container { max-width: 720px; margin: 0 auto; padding: 40px 20px 60px; }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .feature {
+    background: #fff;
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .feature h3 { margin: 0 0 6px; font-size: 15px; }
+  .feature p { margin: 0; font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
+  .foot { text-align: center; padding: 30px 20px; font-size: 12.5px; color: var(--text-muted); }
+  .foot a { color: var(--teal); }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <img src="logo.svg" alt="ATHIA">
+    <h1>ATHIA</h1>
+    <p>Coach IA d'entraînement pour cyclistes — planification, charge d'entraînement et recommandations adaptées à ta forme, connecté à Strava, Intervals.icu et Health Connect.</p>
+  </div>
+  <div class="container">
+    <div class="features">
+      <div class="feature">
+        <h3>Coach IA</h3>
+        <p>Une séance recommandée chaque jour, adaptée à ta charge, ta fraîcheur et ton profil de puissance.</p>
+      </div>
+      <div class="feature">
+        <h3>Suivi de charge</h3>
+        <p>CTL, ATL, TSB et TSS suivis automatiquement depuis Strava et Intervals.icu.</p>
+      </div>
+      <div class="feature">
+        <h3>Planification</h3>
+        <p>Construis ton plan d'entraînement sur plusieurs semaines et suis ta progression.</p>
+      </div>
+      <div class="feature">
+        <h3>Connecté</h3>
+        <p>Strava, Intervals.icu et Health Connect (sommeil, fréquence cardiaque au repos).</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    ATHIA · <a href="privacy.html">Politique de confidentialité</a>
+  </div>
+</body>
+</html>
