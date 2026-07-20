@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATHIA — Politique de confidentialité</title>
+<style>
+  :root { --teal: #12A594; --text-primary: #1a1a1a; --text-muted: #6b6b6b; --border: #e5e5e5; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #f4f5f4;
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0 0 50px;
+  }
+  .banner { background: var(--teal); color: #fff; padding: 26px 20px; }
+  .banner h1 { margin: 0; font-size: 20px; letter-spacing: 2px; }
+  .banner p { margin: 6px 0 0; font-size: 12.5px; opacity: 0.9; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 20px; }
+  h2 { font-size: 16px; margin: 28px 0 8px; }
+  p, li { font-size: 14px; line-height: 1.7; color: var(--text-primary); }
+  ul { padding-left: 20px; }
+  .muted { color: var(--text-muted); font-size: 13px; }
+  a { color: var(--teal); }
+</style>
+</head>
+<body>
+  <div class="banner">
+    <h1>ATHIA — Politique de confidentialité</h1>
+    <p>Dernière mise à jour : juillet 2026</p>
+  </div>
+  <div class="container">
+    <p>ATHIA est une application d'entraînement cycliste. Cette page décrit quelles données sont collectées, pourquoi, et comment elles sont protégées.</p>
+
+    <h2>Principe : local-first</h2>
+    <p>Tes données d'entraînement (séances, historique, streams de puissance/FC, planification) sont stockées <strong>sur ton téléphone</strong>, pas sur un serveur central. Le serveur ATHIA ne conserve que le strict nécessaire pour faire fonctionner ton compte et ton abonnement.</p>
+
+    <h2>Données collectées</h2>
+    <ul>
+      <li><strong>Compte :</strong> adresse e-mail, pour la connexion (lien magique, sans mot de passe) via Supabase Auth.</li>
+      <li><strong>Abonnement et quota :</strong> le plan choisi et le nombre d'actions IA utilisées ce mois-ci, associés à ton compte.</li>
+      <li><strong>Données d'entraînement :</strong> séances, puissance, fréquence cardiaque, distance, importées depuis Strava, Intervals.icu ou Health Connect si tu connectes ces services — stockées localement sur ton appareil.</li>
+      <li><strong>Résumé d'activité (optionnel) :</strong> si tu actives le partage coach, un résumé (date, durée, charge, puissance, FC) est envoyé au serveur pour générer un lien de suivi consultable par un tiers de ton choix (ton entraîneur, par exemple).</li>
+    </ul>
+
+    <h2>Services tiers connectés</h2>
+    <p>ATHIA peut se connecter, à ta demande, à :</p>
+    <ul>
+      <li><strong>Strava</strong> — import de tes activités (OAuth, tu peux révoquer l'accès à tout moment depuis Strava).</li>
+      <li><strong>Intervals.icu</strong> — synchronisation de ta charge d'entraînement et de tes données de wellness.</li>
+      <li><strong>Health Connect (Android)</strong> — sommeil et fréquence cardiaque au repos, lues localement sur ton téléphone.</li>
+      <li><strong>OpenAI</strong> — les recommandations du coach IA sont générées via une clé API gérée par le serveur ATHIA ; le contenu envoyé (résumé de charge, profil, message) sert uniquement à générer la réponse et n'est pas conservé par ATHIA après l'appel.</li>
+    </ul>
+
+    <h2>Ce que nous ne faisons pas</h2>
+    <ul>
+      <li>Nous ne vendons pas tes données.</li>
+      <li>Nous ne partageons pas tes données d'entraînement avec des tiers publicitaires.</li>
+      <li>Nous ne stockons pas ta localisation précise sur le serveur.</li>
+    </ul>
+
+    <h2>Suppression de compte</h2>
+    <p>Tu peux supprimer ton compte ATHIA à tout moment depuis l'application (Paramètres → Compte → Supprimer mon compte). Cela efface définitivement les données serveur associées (compte, abonnement, quota, lien de partage). Les données stockées localement sur ton téléphone ne sont pas affectées par cette suppression et restent gérées par toi (désinstallation de l'app pour les effacer).</p>
+
+    <h2>Contact</h2>
+    <p class="muted">Pour toute question sur cette politique ou tes données, contacte-nous à l'adresse associée au compte développeur ATHIA.</p>
+  </div>
+</body>
+</html>
