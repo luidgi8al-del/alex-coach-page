@@ -152,23 +152,6 @@
   .metric-value { font-size: 11.5px; font-weight: 600; margin-top: 2px; }
   .metric-value.muted { color: var(--text-hint); font-weight: 400; }
   .foot { max-width: 680px; margin: 18px auto 0; padding: 0 16px; font-size: 11.5px; color: var(--text-hint); }
-  .month-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 22px 0 12px;
-  }
-  .month-header:first-child { margin-top: 4px; }
-  .month-header .month-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--teal);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
-  .month-header .month-line { flex: 1; height: 1px; background: var(--border); }
-
   .santé-row {
     display: flex;
     justify-content: space-between;
@@ -180,6 +163,37 @@
   .santé-row:first-child { border-top: none; }
   .santé-row .santé-date { color: var(--text-muted); }
   .santé-row .santé-values { display: flex; gap: 16px; font-weight: 600; }
+
+  .chart-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    min-height: 16px;
+  }
+  .chart-detail b { color: var(--text-primary); }
+  canvas { cursor: crosshair; touch-action: none; }
+
+  .month-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 22px 0 10px;
+    cursor: pointer;
+  }
+  .month-toggle:first-of-type { margin-top: 4px; }
+  .month-toggle .month-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--teal);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .month-toggle .month-line { flex: 1; height: 1px; background: var(--border); }
+  .month-toggle .month-chev { color: var(--text-hint); font-size: 11px; transition: transform 0.15s; }
+  .month-toggle .month-chev.open { transform: rotate(90deg); }
+  .month-weeks { display: none; }
+  .month-weeks.open { display: block; }
 </style>
 </head>
 <body>
@@ -267,48 +281,104 @@
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <h3>Forme au fil du temps</h3>
+        <h3>Forme au fil du temps (90 jours)</h3>
         <div class="legend">
           <span><span class="dot" style="background:var(--blue)"></span>CTL (fitness)</span>
           <span><span class="dot" style="background:var(--orange)"></span>ATL (fatigue)</span>
           <span><span class="dot" style="background:var(--teal)"></span>TSB (forme)</span>
         </div>
         <canvas id="chart-forme" width="600" height="220" style="width:100%;height:180px"></canvas>
+        <div class="chart-detail" id="chart-forme-detail">Touche la courbe pour voir un jour précis.</div>
       `;
       panel.appendChild(card);
 
-      drawFormeChart(metricsRows.slice(0, 60).reverse());
+      drawLineChart({
+        canvasId: "chart-forme",
+        detailId: "chart-forme-detail",
+        rows: metricsRows.slice(0, 90).reverse(),
+        series: [
+          { key: "ctl", color: "#185FA5" },
+          { key: "atl", color: "#BA7517" },
+          { key: "tsb", color: "#0F6E56" }
+        ],
+        formatDetail: (r) => `<b>${jourLabel(r.date)}</b> — CTL ${r.ctl != null ? Math.round(r.ctl) : "--"} · ATL ${r.atl != null ? Math.round(r.atl) : "--"} · TSB ${r.tsb != null ? (r.tsb >= 0 ? "+" : "") + Math.round(r.tsb) : "--"}`
+      });
     }
 
-    function drawFormeChart(rows) {
-      const canvas = document.getElementById("chart-forme");
+    // Trace 1..N courbes sur un canvas, avec detection du point le plus proche au
+    // clic/tap pour afficher le detail du jour sous le graphe.
+    function drawLineChart({ canvasId, detailId, rows, series, formatDetail }) {
+      const canvas = document.getElementById(canvasId);
+      const detailEl = document.getElementById(detailId);
       const ctx = canvas.getContext("2d");
       const w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
-      if (rows.length < 2) return;
+      if (rows.length < 2) {
+        if (detailEl) detailEl.textContent = "Pas encore assez de jours pour tracer une courbe.";
+        return;
+      }
 
-      const allValues = rows.flatMap(r => [r.ctl || 0, r.atl || 0, r.tsb || 0]);
+      const allValues = rows.flatMap(r => series.map(s => r[s.key] || 0));
       const minV = Math.min(...allValues, 0);
       const maxV = Math.max(...allValues, 10);
       const pad = 10;
       const x = i => pad + (i / (rows.length - 1)) * (w - pad * 2);
       const y = v => h - pad - ((v - minV) / (maxV - minV || 1)) * (h - pad * 2);
 
-      const drawLine = (key, color) => {
+      series.forEach(s => {
         ctx.beginPath();
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = s.color;
         ctx.lineWidth = 2;
         rows.forEach((r, i) => {
-          const v = r[key];
+          const v = r[s.key];
           if (v === null || v === undefined) return;
           const px = x(i), py = y(v);
           if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
         });
         ctx.stroke();
+      });
+
+      let markerX = null;
+      const drawMarker = () => {
+        ctx.clearRect(0, 0, w, h);
+        series.forEach(s => {
+          ctx.beginPath();
+          ctx.strokeStyle = s.color;
+          ctx.lineWidth = 2;
+          rows.forEach((r, i) => {
+            const v = r[s.key];
+            if (v === null || v === undefined) return;
+            const px = x(i), py = y(v);
+            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          });
+          ctx.stroke();
+        });
+        if (markerX !== null) {
+          ctx.strokeStyle = "#8a8a8a";
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(markerX, pad);
+          ctx.lineTo(markerX, h - pad);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
       };
-      drawLine("ctl", "#185FA5");
-      drawLine("atl", "#BA7517");
-      drawLine("tsb", "#0F6E56");
+
+      const handlePointer = (clientX) => {
+        const rect = canvas.getBoundingClientRect();
+        const relX = (clientX - rect.left) / rect.width * w;
+        const idx = Math.round((relX - pad) / (w - pad * 2) * (rows.length - 1));
+        const clamped = Math.max(0, Math.min(rows.length - 1, idx));
+        markerX = x(clamped);
+        drawMarker();
+        if (detailEl) detailEl.innerHTML = formatDetail(rows[clamped]);
+      };
+
+      canvas.addEventListener("mousemove", (e) => handlePointer(e.clientX));
+      canvas.addEventListener("click", (e) => handlePointer(e.clientX));
+      canvas.addEventListener("touchstart", (e) => { handlePointer(e.touches[0].clientX); }, { passive: true });
+      canvas.addEventListener("touchmove", (e) => { handlePointer(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
     }
 
     function renderZones(zonesRow) {
@@ -339,7 +409,38 @@
         panel.innerHTML = '<div class="empty">Pas encore de données de santé partagées.</div>';
         return;
       }
-      const rows = avecSante.slice(0, 30).map(r => `
+
+      panel.innerHTML = `
+        <div class="card">
+          <h3>Sommeil (30 derniers jours)</h3>
+          <canvas id="chart-sommeil" width="600" height="180" style="width:100%;height:150px"></canvas>
+          <div class="chart-detail" id="chart-sommeil-detail">Touche la courbe pour voir un jour précis.</div>
+        </div>
+        <div class="card">
+          <h3>FC repos (30 derniers jours)</h3>
+          <canvas id="chart-fcrepos" width="600" height="180" style="width:100%;height:150px"></canvas>
+          <div class="chart-detail" id="chart-fcrepos-detail">Touche la courbe pour voir un jour précis.</div>
+        </div>
+        <div class="card"><h3>Historique</h3><div id="sante-list"></div></div>
+      `;
+
+      const sur30 = avecSante.slice(0, 30).reverse();
+      drawLineChart({
+        canvasId: "chart-sommeil",
+        detailId: "chart-sommeil-detail",
+        rows: sur30,
+        series: [{ key: "sleep_hours", color: "#0F6E56" }],
+        formatDetail: (r) => `<b>${jourLabel(r.date)}</b> — ${r.sleep_hours != null ? r.sleep_hours.toFixed(1) + " h de sommeil" : "pas de donnée"}`
+      });
+      drawLineChart({
+        canvasId: "chart-fcrepos",
+        detailId: "chart-fcrepos-detail",
+        rows: sur30,
+        series: [{ key: "resting_hr", color: "#D4537E" }],
+        formatDetail: (r) => `<b>${jourLabel(r.date)}</b> — ${r.resting_hr != null ? r.resting_hr + " bpm au repos" : "pas de donnée"}`
+      });
+
+      document.getElementById("sante-list").innerHTML = avecSante.slice(0, 30).map(r => `
         <div class="santé-row">
           <span class="santé-date">${jourLabel(r.date)}</span>
           <span class="santé-values">
@@ -348,8 +449,9 @@
           </span>
         </div>
       `).join("");
-      panel.innerHTML = `<div class="card"><h3>Sommeil et FC repos</h3>${rows}</div>`;
     }
+
+    let semaineOuverteIdx = null;
 
     function renderPlanning(rows) {
       const panel = document.getElementById("panel-planning");
@@ -378,74 +480,113 @@
       const semainesTriees = [...semaines.entries()].sort((a, b) => b[0].localeCompare(a[0]));
       const MOIS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
                     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-      let moisCourant = "";
 
-      semainesTriees.forEach(([key, s], idx) => {
+      // Regroupe par mois, dans l'ordre (le plus récent en premier)
+      const parMois = new Map();
+      semainesTriees.forEach(([key, s]) => {
         const dMois = new Date(key + "T00:00:00");
+        const moisKey = `${dMois.getFullYear()}-${dMois.getMonth()}`;
         const moisLabel = `${MOIS[dMois.getMonth()]} ${dMois.getFullYear()}`;
-        if (moisLabel !== moisCourant) {
-          moisCourant = moisLabel;
-          const mh = document.createElement("div");
-          mh.className = "month-header";
-          mh.innerHTML = `<span class="month-label">${moisLabel}</span><span class="month-line"></span>`;
-          panel.appendChild(mh);
-        }
-
-        const card = document.createElement("div");
-        card.className = "week-card";
-
-        const head = document.createElement("div");
-        head.className = "week-head";
-        head.innerHTML = `<span class="label">${s.label}</span><span class="chev" id="chev-${idx}">&#9656;</span>`;
-        head.addEventListener("click", () => toggle(idx));
-        card.appendChild(head);
-
-        const stats = document.createElement("div");
-        stats.className = "week-stats";
-        stats.innerHTML = `
-          <div><div class="stat-label">Charge</div><div class="stat-value accent">${s.charge}</div></div>
-          <div><div class="stat-label">Durée</div><div class="stat-value">${dureeLabel(s.dureeMin)}</div></div>
-          <div><div class="stat-label">Distance</div><div class="stat-value">${s.distanceKm.toFixed(0)} km</div></div>
-          <div><div class="stat-label">Sorties</div><div class="stat-value">${s.sorties}</div></div>
-        `;
-        card.appendChild(stats);
-
-        const wrap = document.createElement("div");
-        wrap.className = "detail-wrap";
-        wrap.id = `detail-${idx}`;
-
-        for (const j of s.jours) {
-          const dayCard = document.createElement("div");
-          dayCard.className = "day-card";
-          dayCard.innerHTML = `
-            <div class="day-head">
-              <span class="day-title">${jourLabel(j.activity_date)}</span>
-              <span class="day-type">${j.type || "Sortie"}</span>
-            </div>
-            <div class="metric-row">
-              <div><div class="metric-label">Durée</div>${fmt(dureeLabel(j.duration_min || 0), "")}</div>
-              <div><div class="metric-label">Distance</div>${fmt((j.distance_km || 0).toFixed(1), " km")}</div>
-              <div><div class="metric-label">Puiss. moy</div>${fmt(j.avg_power, " W")}</div>
-              <div><div class="metric-label">FC moy</div>${fmt(j.avg_hr, " bpm")}</div>
-            </div>
-            <div class="metric-row row2">
-              <div><div class="metric-label">Puiss. max</div>${fmt(j.max_power, " W")}</div>
-              <div><div class="metric-label">FC max</div>${fmt(j.max_hr, " bpm")}</div>
-              <div><div class="metric-label">Charge</div>${fmt(j.charge, "")}</div>
-            </div>
-          `;
-          wrap.appendChild(dayCard);
-        }
-        card.appendChild(wrap);
-        panel.appendChild(card);
+        if (!parMois.has(moisKey)) parMois.set(moisKey, { label: moisLabel, semaines: [] });
+        parMois.get(moisKey).semaines.push([key, s]);
       });
+
+      panel.innerHTML = "";
+      let premierMois = true;
+      let idxGlobal = 0;
+
+      for (const [moisKey, mois] of parMois) {
+        const moisId = `mois-${moisKey}`;
+        const toggle = document.createElement("div");
+        toggle.className = "month-toggle";
+        toggle.innerHTML = `<span class="month-label">${mois.label}</span><span class="month-line"></span><span class="month-chev${premierMois ? " open" : ""}">&#9656;</span>`;
+        toggle.addEventListener("click", () => toggleMois(moisId, toggle));
+        panel.appendChild(toggle);
+
+        const weeksWrap = document.createElement("div");
+        weeksWrap.className = "month-weeks" + (premierMois ? " open" : "");
+        weeksWrap.id = moisId;
+
+        mois.semaines.forEach(([key, s]) => {
+          const idx = idxGlobal++;
+          const card = document.createElement("div");
+          card.className = "week-card";
+
+          const head = document.createElement("div");
+          head.className = "week-head";
+          head.innerHTML = `<span class="label">${s.label}</span><span class="chev" id="chev-${idx}">&#9656;</span>`;
+          head.addEventListener("click", () => toggleSemaine(idx));
+          card.appendChild(head);
+
+          const stats = document.createElement("div");
+          stats.className = "week-stats";
+          stats.innerHTML = `
+            <div><div class="stat-label">Charge</div><div class="stat-value accent">${s.charge}</div></div>
+            <div><div class="stat-label">Durée</div><div class="stat-value">${dureeLabel(s.dureeMin)}</div></div>
+            <div><div class="stat-label">Distance</div><div class="stat-value">${s.distanceKm.toFixed(0)} km</div></div>
+            <div><div class="stat-label">Sorties</div><div class="stat-value">${s.sorties}</div></div>
+          `;
+          card.appendChild(stats);
+
+          const wrap = document.createElement("div");
+          wrap.className = "detail-wrap";
+          wrap.id = `detail-${idx}`;
+
+          for (const j of s.jours) {
+            const dayCard = document.createElement("div");
+            dayCard.className = "day-card";
+            dayCard.innerHTML = `
+              <div class="day-head">
+                <span class="day-title">${jourLabel(j.activity_date)}</span>
+                <span class="day-type">${j.type || "Sortie"}</span>
+              </div>
+              <div class="metric-row">
+                <div><div class="metric-label">Durée</div>${fmt(dureeLabel(j.duration_min || 0), "")}</div>
+                <div><div class="metric-label">Distance</div>${fmt((j.distance_km || 0).toFixed(1), " km")}</div>
+                <div><div class="metric-label">Puiss. moy</div>${fmt(j.avg_power, " W")}</div>
+                <div><div class="metric-label">FC moy</div>${fmt(j.avg_hr, " bpm")}</div>
+              </div>
+              <div class="metric-row row2">
+                <div><div class="metric-label">Puiss. max</div>${fmt(j.max_power, " W")}</div>
+                <div><div class="metric-label">FC max</div>${fmt(j.max_hr, " bpm")}</div>
+                <div><div class="metric-label">Charge</div>${fmt(j.charge, "")}</div>
+              </div>
+            `;
+            wrap.appendChild(dayCard);
+          }
+          card.appendChild(wrap);
+          weeksWrap.appendChild(card);
+        });
+
+        panel.appendChild(weeksWrap);
+        premierMois = false;
+      }
     }
 
-    function toggle(idx) {
+    // Un seul mois ouvert à la fois : en ouvrir un ferme celui déjà ouvert.
+    function toggleMois(moisId, toggleEl) {
+      const wrap = document.getElementById(moisId);
+      const wasOpen = wrap.classList.contains("open");
+      document.querySelectorAll(".month-weeks.open").forEach(w => w.classList.remove("open"));
+      document.querySelectorAll(".month-chev.open").forEach(c => c.classList.remove("open"));
+      if (!wasOpen) {
+        wrap.classList.add("open");
+        toggleEl.querySelector(".month-chev").classList.add("open");
+      }
+    }
+
+    // Une seule semaine ouverte à la fois (tous mois confondus) : changer de semaine
+    // referme celle qui était ouverte.
+    function toggleSemaine(idx) {
+      if (semaineOuverteIdx !== null && semaineOuverteIdx !== idx) {
+        document.getElementById(`detail-${semaineOuverteIdx}`)?.classList.remove("open");
+        document.getElementById(`chev-${semaineOuverteIdx}`)?.classList.remove("open");
+      }
       const wrap = document.getElementById(`detail-${idx}`);
       const chev = document.getElementById(`chev-${idx}`);
       const open = wrap.classList.toggle("open");
       chev.classList.toggle("open", open);
+      semaineOuverteIdx = open ? idx : null;
     }
 
     async function rpc(name, token) {
@@ -472,10 +613,11 @@
 
       setupTabs();
 
-      const [summaryRows, metricsRows, zonesRows] = await Promise.all([
+      const [summaryRows, metricsRows, zonesRows, profileRows] = await Promise.all([
         rpc("get_coach_summary", token),
         rpc("get_coach_metrics", token),
-        rpc("get_coach_zones", token)
+        rpc("get_coach_zones", token),
+        rpc("get_coach_profile", token)
       ]);
 
       if (summaryRows === null && metricsRows === null && zonesRows === null) {
@@ -489,6 +631,8 @@
       renderZones((zonesRows && zonesRows[0]) || null);
       renderSante(metricsRows || []);
 
+      const nom = profileRows && profileRows[0] && profileRows[0].athlete_name;
+      document.querySelector(".brand").textContent = nom ? `ATHIA — ${nom}` : "ATHIA";
       subtitle.textContent = `${(summaryRows || []).length} sortie(s) sur les 12 derniers mois`;
     }
 
