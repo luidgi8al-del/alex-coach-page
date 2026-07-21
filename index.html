@@ -53,6 +53,11 @@
   }
   .tab.active { background: #f4f5f4; color: var(--teal); }
   .container { max-width: 680px; margin: 0 auto; padding: 18px 16px 0; }
+  @media (min-width: 900px) {
+    .container { max-width: 1080px; }
+    #panel-apercu.apercu-grid { display: flex; align-items: flex-start; gap: 16px; }
+    #panel-apercu.apercu-grid > .apercu-col { flex: 1; min-width: 0; }
+  }
   .panel { display: none; }
   .panel.active { display: block; }
   .empty, .error { color: var(--text-muted); padding: 60px 20px; text-align: center; font-size: 14px; }
@@ -285,7 +290,21 @@
       });
     }
 
+    // Sur grand écran, le panneau Aperçu passe en 2 colonnes : Profil coureur à gauche,
+    // CTL/ATL/TSB + courbe à droite (voir @media (min-width: 900px) plus haut). Les deux
+    // fonctions écrivent chacune dans leur colonne (#apercu-col-profil / #apercu-col-forme),
+    // créées une fois ici pour que l'ordre DOM (donc l'ordre visuel) reste stable.
+    function ensureApercuColumns() {
+      const panel = document.getElementById("panel-apercu");
+      panel.classList.add("apercu-grid");
+      panel.innerHTML = `
+        <div class="apercu-col" id="apercu-col-profil"></div>
+        <div class="apercu-col" id="apercu-col-forme"></div>
+      `;
+    }
+
     function renderProfilCoureur(profileRow) {
+      const col = document.getElementById("apercu-col-profil");
       if (!profileRow || !profileRow.phenotype || !profileRow.axes || profileRow.axes.length === 0) return;
       const card = document.createElement("div");
       card.className = "card";
@@ -315,11 +334,11 @@
         ${fortFaible}
         ${axesHtml}
       `;
-      document.getElementById("panel-apercu").appendChild(card);
+      col.appendChild(card);
     }
 
     function renderApercu(metricsRows) {
-      const panel = document.getElementById("panel-apercu");
+      const panel = document.getElementById("apercu-col-forme");
       if (!metricsRows || metricsRows.length === 0) {
         panel.innerHTML = '<div class="empty">Pas encore de données de forme partagées.</div>';
         return;
@@ -438,33 +457,65 @@
       canvas.addEventListener("touchmove", (e) => { handlePointer(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
     }
 
+    // Période affichée dans l'onglet Zones : "total" (cumul depuis le début) ou une moyenne
+    // par semaine/mois/année. Un seul sélecteur pour les deux cartes (puissance + FC).
+    let zonesPeriode = "total";
+    let zonesRowCache = null;
+
+    const ZONES_PERIODES = [
+      { id: "total", label: "Total" },
+      { id: "semaine", label: "Semaine" },
+      { id: "mois", label: "Mois" },
+      { id: "annee", label: "Année" }
+    ];
+
+    function zoneValeur(z, periode) {
+      switch (periode) {
+        case "semaine": return z.avgMinPerWeek;
+        case "mois": return z.avgMinPerMonth;
+        case "annee": return z.avgMinPerYear;
+        default: return z.minutes;
+      }
+    }
+
     function renderZones(zonesRow) {
+      zonesRowCache = zonesRow;
       const panel = document.getElementById("panel-zones");
       if (!zonesRow || (!zonesRow.power_zones?.length && !zonesRow.hr_zones?.length)) {
         panel.innerHTML = '<div class="empty">Pas encore de répartition par zones partagée.</div>';
         return;
       }
+
+      const tabsHtml = `
+        <div class="tabs" style="padding:0;margin:0 0 14px;background:transparent">
+          ${ZONES_PERIODES.map(p => `<button class="tab zones-periode-tab${p.id === zonesPeriode ? " active" : ""}" data-periode="${p.id}" style="color:${p.id === zonesPeriode ? "var(--teal)" : "var(--text-muted)"};background:${p.id === zonesPeriode ? "var(--teal-light-bg)" : "var(--border-light)"}">${p.label}</button>`).join("")}
+        </div>`;
+
       const renderZoneCard = (title, zones) => {
         if (!zones || zones.length === 0) return "";
-        const maxMin = Math.max(...zones.map(z => z.minutes), 1);
-        const rows = zones.map(z => {
-          const avgParts = [];
-          if (z.avgMinPerWeek != null) avgParts.push(`${dureeLabel(Math.round(z.avgMinPerWeek))}/sem`);
-          if (z.avgMinPerMonth != null) avgParts.push(`${dureeLabel(Math.round(z.avgMinPerMonth))}/mois`);
-          if (z.avgMinPerYear != null) avgParts.push(`${dureeLabel(Math.round(z.avgMinPerYear))}/an`);
-          return `
+        const values = zones.map(z => zoneValeur(z, zonesPeriode) || 0);
+        const maxV = Math.max(...values, 1);
+        const rows = zones.map((z, i) => `
           <div class="zone-row">
             <div class="zone-label">${z.label}</div>
             <div style="flex:1">
-              <div class="zone-bar-wrap"><div class="zone-bar" style="width:${(z.minutes / maxMin * 100).toFixed(0)}%"></div></div>
-              ${avgParts.length ? `<div class="zone-avg">Moyenne : ${avgParts.join(" · ")}</div>` : ""}
+              <div class="zone-bar-wrap"><div class="zone-bar" style="width:${(values[i] / maxV * 100).toFixed(0)}%"></div></div>
             </div>
-            <div class="zone-value">${dureeLabel(z.minutes)}</div>
-          </div>`;
-        }).join("");
+            <div class="zone-value">${dureeLabel(Math.round(values[i]))}</div>
+          </div>`).join("");
         return `<div class="card"><h3>${title}</h3>${rows}</div>`;
       };
-      panel.innerHTML = renderZoneCard("Zones de puissance", zonesRow.power_zones) + renderZoneCard("Zones de fréquence cardiaque", zonesRow.hr_zones);
+
+      panel.innerHTML = tabsHtml +
+        renderZoneCard("Zones de puissance", zonesRow.power_zones) +
+        renderZoneCard("Zones de fréquence cardiaque", zonesRow.hr_zones);
+
+      panel.querySelectorAll(".zones-periode-tab").forEach(btn => {
+        btn.addEventListener("click", () => {
+          zonesPeriode = btn.dataset.periode;
+          renderZones(zonesRowCache);
+        });
+      });
     }
 
     function renderSante(metricsRows) {
@@ -692,6 +743,7 @@
         return;
       }
 
+      ensureApercuColumns();
       renderApercu(metricsRows || []);
       renderProfilCoureur((riderProfileRows && riderProfileRows[0]) || null);
       renderPlanning(summaryRows || []);
