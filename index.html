@@ -194,6 +194,30 @@
   .month-toggle .month-chev.open { transform: rotate(90deg); }
   .month-weeks { display: none; }
   .month-weeks.open { display: block; }
+
+  .pheno-badge {
+    display: inline-block;
+    background: var(--teal-light-bg);
+    color: var(--teal);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+  }
+  .pheno-desc { font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; }
+  .pheno-fortfaible { display: flex; gap: 16px; font-size: 12px; margin-bottom: 14px; }
+  .pheno-fortfaible b { color: var(--text-primary); }
+  .axe-row { margin-bottom: 12px; }
+  .axe-row:last-child { margin-bottom: 0; }
+  .axe-head { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px; }
+  .axe-head .axe-nom { font-weight: 600; }
+  .axe-head .axe-cat { color: var(--text-muted); }
+  .axe-bar-wrap { height: 10px; background: var(--border-light); border-radius: 5px; overflow: hidden; }
+  .axe-bar { height: 100%; border-radius: 5px; background: var(--teal); }
+  .axe-foot { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-hint); margin-top: 3px; }
+
+  .zone-avg { font-size: 10.5px; color: var(--text-hint); margin-top: 1px; }
 </style>
 </head>
 <body>
@@ -259,6 +283,39 @@
           document.getElementById("foot").style.display = btn.dataset.tab === "planning" ? "block" : "none";
         });
       });
+    }
+
+    function renderProfilCoureur(profileRow) {
+      if (!profileRow || !profileRow.phenotype || !profileRow.axes || profileRow.axes.length === 0) return;
+      const card = document.createElement("div");
+      card.className = "card";
+      const fortFaible = (profileRow.point_fort || profileRow.point_faible) ? `
+        <div class="pheno-fortfaible">
+          ${profileRow.point_fort ? `<span>Point fort : <b>${profileRow.point_fort}</b></span>` : ""}
+          ${profileRow.point_faible ? `<span>À travailler : <b>${profileRow.point_faible}</b></span>` : ""}
+        </div>` : "";
+      const axesHtml = profileRow.axes.map(a => {
+        const score = Math.max(0, Math.min(100, a.score || 0));
+        const color = score >= 67 ? "#2FA84A" : score >= 44 ? "#185FA5" : score >= 22 ? "#E8A33D" : "#8a8a8a";
+        const wkgTxt = a.wkg != null ? `${a.wkg.toFixed(2)} W/kg` : "—";
+        return `
+          <div class="axe-row">
+            <div class="axe-head">
+              <span class="axe-nom">${a.nom} <span style="color:var(--text-hint);font-weight:400">(${a.duree})</span></span>
+              <span class="axe-cat">${a.categorie}</span>
+            </div>
+            <div class="axe-bar-wrap"><div class="axe-bar" style="width:${score.toFixed(0)}%;background:${color}"></div></div>
+            <div class="axe-foot"><span>${wkgTxt}${a.watts != null ? " · " + a.watts + " W" : ""}</span><span>${score.toFixed(0)}/100</span></div>
+          </div>`;
+      }).join("");
+      card.innerHTML = `
+        <h3>Profil coureur</h3>
+        <div class="pheno-badge">${profileRow.phenotype}</div>
+        <div class="pheno-desc">${profileRow.phenotype_description || ""}</div>
+        ${fortFaible}
+        ${axesHtml}
+      `;
+      document.getElementById("panel-apercu").appendChild(card);
     }
 
     function renderApercu(metricsRows) {
@@ -390,13 +447,21 @@
       const renderZoneCard = (title, zones) => {
         if (!zones || zones.length === 0) return "";
         const maxMin = Math.max(...zones.map(z => z.minutes), 1);
-        const rows = zones.map(z => `
+        const rows = zones.map(z => {
+          const avgParts = [];
+          if (z.avgMinPerWeek != null) avgParts.push(`${dureeLabel(Math.round(z.avgMinPerWeek))}/sem`);
+          if (z.avgMinPerMonth != null) avgParts.push(`${dureeLabel(Math.round(z.avgMinPerMonth))}/mois`);
+          if (z.avgMinPerYear != null) avgParts.push(`${dureeLabel(Math.round(z.avgMinPerYear))}/an`);
+          return `
           <div class="zone-row">
             <div class="zone-label">${z.label}</div>
-            <div class="zone-bar-wrap"><div class="zone-bar" style="width:${(z.minutes / maxMin * 100).toFixed(0)}%"></div></div>
+            <div style="flex:1">
+              <div class="zone-bar-wrap"><div class="zone-bar" style="width:${(z.minutes / maxMin * 100).toFixed(0)}%"></div></div>
+              ${avgParts.length ? `<div class="zone-avg">Moyenne : ${avgParts.join(" · ")}</div>` : ""}
+            </div>
             <div class="zone-value">${dureeLabel(z.minutes)}</div>
-          </div>
-        `).join("");
+          </div>`;
+        }).join("");
         return `<div class="card"><h3>${title}</h3>${rows}</div>`;
       };
       panel.innerHTML = renderZoneCard("Zones de puissance", zonesRow.power_zones) + renderZoneCard("Zones de fréquence cardiaque", zonesRow.hr_zones);
@@ -613,11 +678,12 @@
 
       setupTabs();
 
-      const [summaryRows, metricsRows, zonesRows, profileRows] = await Promise.all([
+      const [summaryRows, metricsRows, zonesRows, profileRows, riderProfileRows] = await Promise.all([
         rpc("get_coach_summary", token),
         rpc("get_coach_metrics", token),
         rpc("get_coach_zones", token),
-        rpc("get_coach_profile", token)
+        rpc("get_coach_profile", token),
+        rpc("get_coach_rider_profile", token)
       ]);
 
       if (summaryRows === null && metricsRows === null && zonesRows === null) {
@@ -627,6 +693,7 @@
       }
 
       renderApercu(metricsRows || []);
+      renderProfilCoureur((riderProfileRows && riderProfileRows[0]) || null);
       renderPlanning(summaryRows || []);
       renderZones((zonesRows && zonesRows[0]) || null);
       renderSante(metricsRows || []);
