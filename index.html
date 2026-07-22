@@ -54,9 +54,10 @@
   .tab.active { background: #f4f5f4; color: var(--teal); }
   .container { max-width: 680px; margin: 0 auto; padding: 18px 16px 0; }
   @media (min-width: 900px) {
-    .container { max-width: 1080px; }
-    #panel-apercu.apercu-grid.active { display: flex; align-items: flex-start; gap: 16px; }
-    #panel-apercu.apercu-grid > .apercu-col { flex: 1; min-width: 0; }
+    .container { max-width: 1440px; }
+    #panel-apercu.apercu-grid.active { display: block; }
+    .apercu-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .apercu-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
   .panel { display: none; }
   .panel.active { display: block; }
@@ -223,6 +224,60 @@
   .axe-foot { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-hint); margin-top: 3px; }
 
   .zone-avg { font-size: 10.5px; color: var(--text-hint); margin-top: 1px; }
+
+  .apercu-top { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .apercu-col { min-width: 0; }
+  .apercu-summary { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 2px; }
+  .summary-card { min-height: 210px; margin-bottom: 0; }
+  .summary-card h3 { font-size: 14px; margin-bottom: 14px; }
+  .status-pill {
+    display: inline-block; padding: 6px 12px; border-radius: 20px;
+    background: #FEF3DD; color: #9A5B00; font-size: 12px; font-weight: 700;
+  }
+  .status-pill.good { background: var(--teal-light-bg); color: var(--teal); }
+  .status-pill.alert { background: #FCE8E6; color: #A32D2D; }
+  .summary-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 18px 0; }
+  .summary-metric { text-align: center; padding: 8px 4px; border-right: 1px solid var(--border-light); }
+  .summary-metric:last-child { border-right: none; }
+  .summary-metric span { display: block; color: var(--text-muted); font-size: 10px; margin-bottom: 4px; }
+  .summary-metric b { font-size: 13px; }
+  .recommendation { border-top: 1px dashed var(--border); padding-top: 12px; font-size: 12px; line-height: 1.45; }
+  .progress-line { margin: 13px 0; }
+  .progress-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; margin-bottom: 5px; }
+  .progress-track { height: 7px; background: var(--border-light); border-radius: 6px; overflow: hidden; }
+  .progress-value { height: 100%; background: #2FA84A; border-radius: 6px; }
+  .week-foot { display: flex; justify-content: space-between; gap: 8px; border-top: 1px dashed var(--border); padding-top: 12px; font-size: 11px; color: var(--text-muted); }
+  .session-box { border: 1px solid #B8DDCF; background: #F4FBF8; border-radius: 10px; padding: 11px; }
+  .session-box .session-title { color: var(--teal); font-weight: 700; font-size: 12px; }
+  .session-box .session-main { margin-top: 5px; font-size: 12px; line-height: 1.45; }
+  .session-box .session-date { margin-top: 4px; color: var(--text-muted); font-size: 10.5px; }
+  .coach-form textarea {
+    width: 100%; min-height: 76px; resize: vertical; border: 1px solid var(--border);
+    border-radius: 9px; padding: 9px 10px; font: inherit; font-size: 12px; line-height: 1.4;
+  }
+  .coach-form textarea:focus { outline: 2px solid rgba(15,110,86,.18); border-color: var(--teal); }
+  .coach-form-row { display: flex; gap: 8px; margin: 8px 0; }
+  .coach-form select { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 7px; background: #fff; font-size: 11px; }
+  .coach-send {
+    width: 100%; border: none; border-radius: 8px; padding: 9px 12px; background: var(--teal);
+    color: #fff; font-weight: 700; font-size: 12px; cursor: pointer;
+  }
+  .coach-send:disabled { opacity: .55; cursor: wait; }
+  .coach-feedback { min-height: 15px; margin-top: 6px; font-size: 10.5px; color: var(--text-muted); }
+  .message-history { border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 8px; }
+  .message-row { font-size: 10.5px; padding: 5px 0; color: var(--text-muted); }
+  .message-row b { color: var(--text-primary); }
+  .read-badge { float: right; color: var(--teal); }
+  .sync-strip {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 16px 0 0;
+    padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff;
+    color: var(--text-muted); font-size: 10.5px;
+  }
+  .stat-trend { margin-top: 2px; font-size: 9.5px; color: var(--text-muted); }
+  @media (max-width: 899px) {
+    .apercu-summary { margin-bottom: 16px; }
+    .summary-card { min-height: 0; }
+  }
 </style>
 </head>
 <body>
@@ -298,8 +353,12 @@
       const panel = document.getElementById("panel-apercu");
       panel.classList.add("apercu-grid");
       panel.innerHTML = `
-        <div class="apercu-col" id="apercu-col-profil"></div>
-        <div class="apercu-col" id="apercu-col-forme"></div>
+        <div class="apercu-top">
+          <div class="apercu-col" id="apercu-col-profil"></div>
+          <div class="apercu-col" id="apercu-col-forme"></div>
+        </div>
+        <div class="apercu-summary" id="apercu-summary"></div>
+        <div class="sync-strip" id="sync-strip"></div>
       `;
     }
 
@@ -344,12 +403,22 @@
         return;
       }
       const dernier = metricsRows[0];
+      const precedent = metricsRows[1] || null;
+      const trend = (value, previous) => {
+        if (value == null || previous == null) return "";
+        const delta = Math.round(value - previous);
+        return `${delta > 0 ? "+" : ""}${delta} vs hier`;
+      };
+      const tsbLabel = dernier.tsb == null ? "" :
+        dernier.tsb < -20 ? "Fatigue élevée" :
+        dernier.tsb < -10 ? "Fatigue modérée" :
+        dernier.tsb <= 10 ? "Équilibre" : "Bonne fraîcheur";
       const stats = document.createElement("div");
       stats.className = "stat-grid";
       stats.innerHTML = `
-        <div><div class="stat-label">CTL</div><div class="stat-value blue">${dernier.ctl != null ? Math.round(dernier.ctl) : "--"}</div></div>
-        <div><div class="stat-label">ATL</div><div class="stat-value orange">${dernier.atl != null ? Math.round(dernier.atl) : "--"}</div></div>
-        <div><div class="stat-label">TSB</div><div class="stat-value teal">${dernier.tsb != null ? (dernier.tsb >= 0 ? "+" : "") + Math.round(dernier.tsb) : "--"}</div></div>
+        <div><div class="stat-label">CTL</div><div class="stat-value blue">${dernier.ctl != null ? Math.round(dernier.ctl) : "--"}</div><div class="stat-trend">${trend(dernier.ctl, precedent?.ctl)}</div></div>
+        <div><div class="stat-label">ATL</div><div class="stat-value orange">${dernier.atl != null ? Math.round(dernier.atl) : "--"}</div><div class="stat-trend">${trend(dernier.atl, precedent?.atl)}</div></div>
+        <div><div class="stat-label">TSB <span title="Forme au début de la journée, calculée depuis le CTL et l'ATL de la veille">ⓘ</span></div><div class="stat-value teal">${dernier.tsb != null ? (dernier.tsb >= 0 ? "+" : "") + Math.round(dernier.tsb) : "--"}</div><div class="stat-trend">${tsbLabel}</div></div>
         <div><div class="stat-label">Date</div><div class="stat-value" style="font-size:13px">${jourLabel(dernier.date)}</div></div>
       `;
       panel.appendChild(stats);
@@ -378,6 +447,136 @@
           { key: "tsb", color: "#0F6E56" }
         ],
         formatDetail: (r) => `<b>${jourLabel(r.date)}</b> — CTL ${r.ctl != null ? Math.round(r.ctl) : "--"} · ATL ${r.atl != null ? Math.round(r.atl) : "--"} · TSB ${r.tsb != null ? (r.tsb >= 0 ? "+" : "") + Math.round(r.tsb) : "--"}`
+      });
+    }
+
+    function startOfWeek(date) {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      const day = (d.getDay() + 6) % 7;
+      d.setDate(d.getDate() - day);
+      return d;
+    }
+
+    function sumRows(rows) {
+      return (rows || []).reduce((acc, r) => {
+        acc.charge += Number(r.charge || 0);
+        acc.duration += Number(r.duration_min || 0);
+        acc.distance += Number(r.distance_km || 0);
+        acc.count += 1;
+        return acc;
+      }, { charge: 0, duration: 0, distance: 0, count: 0 });
+    }
+
+    function renderOverviewSummary(summaryRows, metricsRows, messagesRows, token) {
+      const wrap = document.getElementById("apercu-summary");
+      const latestMetric = metricsRows?.[0] || null;
+      const latestHealth = (metricsRows || []).find(r => r.sleep_hours != null || r.resting_hr != null) || null;
+      const previousHealth = (metricsRows || []).find((r, i) => i > 0 && (r.sleep_hours != null || r.resting_hr != null)) || null;
+      const now = new Date();
+      const monday = startOfWeek(now);
+      const previousMonday = new Date(monday); previousMonday.setDate(previousMonday.getDate() - 7);
+      const currentRows = (summaryRows || []).filter(r => new Date(r.activity_date + "T00:00:00") >= monday);
+      const previousRows = (summaryRows || []).filter(r => {
+        const d = new Date(r.activity_date + "T00:00:00");
+        return d >= previousMonday && d < monday;
+      });
+      const current = sumRows(currentRows);
+      const previous = sumRows(previousRows);
+      const weeklyTarget = Math.max(100, Math.round((latestMetric?.ctl || Math.max(current.charge / 7, 1)) * 7));
+      const progress = Math.min(100, Math.round(current.charge / weeklyTarget * 100));
+      const weekDelta = previous.charge > 0 ? Math.round((current.charge - previous.charge) / previous.charge * 100) : null;
+      const tsb = latestMetric?.tsb;
+      const state = tsb == null ? "Données insuffisantes" : tsb < -20 ? "Fatigue élevée" : tsb < -10 ? "Fatigue modérée" : tsb <= 10 ? "Équilibre" : "Bonne fraîcheur";
+      const stateClass = tsb != null && tsb < -20 ? "alert" : tsb != null && tsb > 10 ? "good" : "";
+      const recommendation = tsb == null ? "Synchronise davantage de données pour obtenir une recommandation." :
+        tsb < -20 ? "Réduire fortement la charge et privilégier la récupération." :
+        tsb < -10 ? "Privilégier récupération ou endurance légère aujourd’hui." :
+        tsb <= 10 ? "Charge maîtrisée : entraînement normal avec surveillance du ressenti." :
+        "Bonne fenêtre pour une séance de qualité si les sensations sont bonnes.";
+      const rhrDelta = latestHealth?.resting_hr != null && previousHealth?.resting_hr != null
+        ? latestHealth.resting_hr - previousHealth.resting_hr : null;
+      const last = (summaryRows || [])[0] || null;
+
+      wrap.innerHTML = `
+        <div class="card summary-card">
+          <h3>État actuel</h3>
+          <span class="status-pill ${stateClass}">${state}</span>
+          <div class="summary-metrics">
+            <div class="summary-metric"><span>Sommeil</span><b>${latestHealth?.sleep_hours != null ? latestHealth.sleep_hours.toFixed(1) + " h" : "--"}</b></div>
+            <div class="summary-metric"><span>FC repos</span><b>${latestHealth?.resting_hr != null ? latestHealth.resting_hr + " bpm" : "--"}</b></div>
+            <div class="summary-metric"><span>Évolution FC</span><b>${rhrDelta == null ? "--" : (rhrDelta > 0 ? "+" : "") + rhrDelta + " bpm"}</b></div>
+          </div>
+          <div class="recommendation">${recommendation}</div>
+        </div>
+        <div class="card summary-card">
+          <h3>Cette semaine</h3>
+          <div class="progress-line">
+            <div class="progress-head"><span>Charge</span><b>${current.charge} / cible ${weeklyTarget}</b></div>
+            <div class="progress-track"><div class="progress-value" style="width:${progress}%"></div></div>
+          </div>
+          <div class="progress-line">
+            <div class="progress-head"><span>Durée</span><b>${dureeLabel(current.duration)}</b></div>
+            <div class="progress-track"><div class="progress-value" style="width:${Math.min(100, current.duration / 600 * 100)}%"></div></div>
+          </div>
+          <div class="week-foot"><span>${current.count} séance(s)</span><span>${current.distance.toFixed(0)} km</span><span>${weekDelta == null ? "Pas de comparaison" : `${weekDelta > 0 ? "+" : ""}${weekDelta} % vs semaine précédente`}</span></div>
+        </div>
+        <div class="card summary-card">
+          <h3>Dernière séance</h3>
+          ${last ? `<div class="session-box"><div class="session-title">${escapeHtml(last.type || "Sortie")}</div><div class="session-main">${dureeLabel(last.duration_min || 0)} · ${(Number(last.distance_km || 0)).toFixed(1)} km · Charge ${last.charge || 0}</div><div class="session-date">${jourLabel(last.activity_date)}${last.avg_power != null ? " · " + last.avg_power + " W" : ""}${last.avg_hr != null ? " · " + last.avg_hr + " bpm" : ""}</div></div>` : '<div class="empty" style="padding:30px 0">Aucune séance partagée.</div>'}
+          <div class="recommendation">Le détail complet reste disponible dans l’onglet Planning.</div>
+        </div>
+        <div class="card summary-card" id="coach-message-card"></div>
+      `;
+      renderCoachMessageComposer(messagesRows || [], token);
+
+      const newestDate = latestMetric?.date || last?.activity_date;
+      document.getElementById("sync-strip").innerHTML = `
+        <span>↻ Données au ${newestDate ? jourLabel(newestDate) : "--"}</span>
+        <span>Activités : ATHIA</span><span>Charge : ATHIA / Intervals.icu</span>
+        <span>Santé : Health Connect</span><span style="color:var(--teal)">✓ Partage actif</span>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+    }
+
+    function renderCoachMessageComposer(messagesRows, token) {
+      const card = document.getElementById("coach-message-card");
+      if (!card) return;
+      const history = messagesRows.slice(0, 3).map(m => `
+        <div class="message-row"><b>${escapeHtml(m.category || "Conseil")}</b> · ${escapeHtml((m.body || "").slice(0, 70))}${(m.body || "").length > 70 ? "…" : ""}<span class="read-badge">${m.read_at ? "Lu" : "Envoyé"}</span></div>`).join("");
+      card.innerHTML = `
+        <h3>Message au sportif</h3>
+        <div class="coach-form">
+          <textarea id="coach-message-body" maxlength="1000" placeholder="Écris une consigne, un conseil ou une modification à proposer…"></textarea>
+          <div class="coach-form-row">
+            <select id="coach-message-category"><option>Conseil</option><option>Information</option><option>Action demandée</option></select>
+            <select id="coach-message-priority"><option value="normal">Normal</option><option value="important">Important</option><option value="urgent">Urgent</option></select>
+          </div>
+          <button class="coach-send" id="coach-message-send">Envoyer le message</button>
+          <div class="coach-feedback" id="coach-message-feedback"></div>
+        </div>
+        ${history ? `<div class="message-history">${history}</div>` : ""}`;
+      document.getElementById("coach-message-send").addEventListener("click", async () => {
+        const button = document.getElementById("coach-message-send");
+        const feedback = document.getElementById("coach-message-feedback");
+        const body = document.getElementById("coach-message-body").value.trim();
+        if (body.length < 2) { feedback.textContent = "Écris un message avant de l’envoyer."; return; }
+        button.disabled = true; feedback.textContent = "Envoi…";
+        const result = await rpc("send_coach_message", token, {
+          p_body: body,
+          p_category: document.getElementById("coach-message-category").value,
+          p_priority: document.getElementById("coach-message-priority").value
+        });
+        if (result === null) {
+          feedback.textContent = "Envoi impossible. Vérifie que la migration Supabase des messages est installée.";
+          button.disabled = false;
+          return;
+        }
+        const refreshed = await rpc("get_coach_messages", token) || [];
+        renderCoachMessageComposer(refreshed, token);
+        document.getElementById("coach-message-feedback").textContent = "Message envoyé.";
       });
     }
 
@@ -705,12 +904,12 @@
       semaineOuverteIdx = open ? idx : null;
     }
 
-    async function rpc(name, token) {
+    async function rpc(name, token, payload = {}) {
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
           method: "POST",
           headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
-          body: JSON.stringify({ p_token: token })
+          body: JSON.stringify({ p_token: token, ...payload })
         });
         if (!res.ok) return null;
         return await res.json();
@@ -729,12 +928,13 @@
 
       setupTabs();
 
-      const [summaryRows, metricsRows, zonesRows, profileRows, riderProfileRows] = await Promise.all([
+      const [summaryRows, metricsRows, zonesRows, profileRows, riderProfileRows, messagesRows] = await Promise.all([
         rpc("get_coach_summary", token),
         rpc("get_coach_metrics", token),
         rpc("get_coach_zones", token),
         rpc("get_coach_profile", token),
-        rpc("get_coach_rider_profile", token)
+        rpc("get_coach_rider_profile", token),
+        rpc("get_coach_messages", token)
       ]);
 
       if (summaryRows === null && metricsRows === null && zonesRows === null) {
@@ -746,6 +946,7 @@
       ensureApercuColumns();
       renderApercu(metricsRows || []);
       renderProfilCoureur((riderProfileRows && riderProfileRows[0]) || null);
+      renderOverviewSummary(summaryRows || [], metricsRows || [], messagesRows || [], token);
       renderPlanning(summaryRows || []);
       renderZones((zonesRows && zonesRows[0]) || null);
       renderSante(metricsRows || []);
