@@ -382,6 +382,95 @@
     .health-signal-table th:nth-child(3), .health-signal-table td:nth-child(3) { display: none; }
   }
 
+  .coach-calendar-page { display: flex; flex-direction: column; min-height: 520px; }
+  .coach-calendar-toolbar {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .coach-month-nav { display: flex; align-items: center; gap: 7px; }
+  .coach-month-title { min-width: 132px; text-align: center; font-size: 14px; font-weight: 600; text-transform: capitalize; }
+  .coach-month-btn, .coach-day-close {
+    border: 1px solid var(--border); background: #fff; color: var(--text-primary);
+    border-radius: 8px; padding: 6px 9px; font: inherit; cursor: pointer;
+  }
+  .coach-calendar-summary, .coach-calendar-legend { color: var(--text-muted); font-size: 10.5px; }
+  .coach-calendar-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+  .coach-legend-item { display: inline-flex; align-items: center; gap: 4px; }
+  .coach-legend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-hint); }
+  .coach-legend-dot.read { background: var(--teal); }
+  .coach-legend-dot.important { background: var(--orange); }
+  .coach-calendar-shell {
+    position: relative; flex: 1; min-height: 470px; overflow: hidden;
+    background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px;
+  }
+  .coach-calendar-grid { display: grid; height: 100%; min-height: 450px; grid-template-rows: 26px minmax(0, 1fr); }
+  .coach-weekdays, .coach-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .coach-weekday { color: var(--text-muted); font-size: 10px; text-align: center; padding: 4px 2px; }
+  .coach-days { grid-template-rows: repeat(6, minmax(68px, 1fr)); }
+  .coach-day-button {
+    min-width: 0; overflow: hidden; border: 0; border-top: 1px solid var(--border-light);
+    border-right: 1px solid var(--border-light); background: transparent; color: var(--text-primary);
+    padding: 5px; text-align: left; font: inherit; cursor: pointer;
+  }
+  .coach-day-button:nth-child(7n) { border-right: 0; }
+  .coach-day-button:hover, .coach-day-button.selected { background: var(--teal-light-bg); }
+  .coach-day-button.outside { opacity: .42; }
+  .coach-day-number { display: block; text-align: right; font-size: 10.5px; font-weight: 600; margin-bottom: 3px; }
+  .coach-calendar-message {
+    display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    border-left: 3px solid var(--text-hint); padding-left: 5px; margin-top: 3px;
+    font-size: 9.5px; line-height: 1.25;
+  }
+  .coach-calendar-message.read { border-color: var(--teal); }
+  .coach-calendar-message.important, .coach-calendar-message.urgent { border-color: var(--orange); }
+  .coach-calendar-more { color: var(--text-muted); font-size: 9px; margin-top: 3px; }
+  .coach-day-panel {
+    position: absolute; z-index: 5; top: 38px; right: 10px; width: min(370px, calc(100% - 20px));
+    max-height: calc(100% - 48px); overflow-y: auto; background: #fff; border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: 0 12px 32px rgba(20,45,38,.18); padding: 13px;
+  }
+  .coach-day-panel[hidden] { display: none; }
+  .coach-day-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+  .coach-day-kicker { color: var(--text-muted); font-size: 9.5px; }
+  .coach-day-title { font-size: 13px; font-weight: 600; text-transform: capitalize; }
+  .coach-day-history { display: grid; gap: 7px; margin-bottom: 10px; }
+  .coach-message-history-item { border-left: 3px solid var(--text-hint); padding-left: 8px; }
+  .coach-message-history-item.read { border-color: var(--teal); }
+  .coach-message-history-item.important, .coach-message-history-item.urgent { border-color: var(--orange); }
+  .coach-message-meta { color: var(--text-muted); font-size: 9.5px; }
+  .coach-message-body { font-size: 11px; line-height: 1.35; margin-top: 2px; }
+  .coach-day-empty { color: var(--text-muted); font-size: 11px; padding: 6px 0; }
+  .coach-day-form { display: grid; gap: 6px; border-top: 1px solid var(--border-light); padding-top: 9px; }
+  .coach-day-form label { color: var(--text-muted); font-size: 9.5px; }
+  .coach-day-form textarea, .coach-day-form select {
+    width: 100%; border: 1px solid var(--border); border-radius: 8px;
+    background: #fff; color: var(--text-primary); padding: 7px 8px; font: inherit; font-size: 11px;
+  }
+  .coach-day-form textarea { min-height: 58px; resize: none; }
+  .coach-day-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .coach-day-send {
+    border: none; border-radius: 8px; background: var(--teal); color: #fff;
+    padding: 8px 11px; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer;
+  }
+  .coach-day-send:disabled { opacity: .55; cursor: wait; }
+  .coach-day-feedback { min-height: 14px; color: var(--text-muted); font-size: 9.5px; }
+  @media (min-width: 900px) {
+    body.coach-active { height: 100vh; overflow: hidden; }
+    #panel-coach.active { display: block; height: 100%; min-height: 0; }
+    .coach-calendar-page { height: 100%; min-height: 0; }
+    .coach-calendar-shell { min-height: 0; }
+    .coach-calendar-grid { min-height: 0; }
+    .coach-days { grid-template-rows: repeat(6, minmax(0, 1fr)); }
+  }
+  @media (max-width: 620px) {
+    .coach-calendar-shell { min-height: 430px; padding: 4px; }
+    .coach-calendar-grid { min-height: 420px; }
+    .coach-days { grid-template-rows: repeat(6, minmax(60px, 1fr)); }
+    .coach-day-button { padding: 3px; }
+    .coach-calendar-message { max-width: 9ch; }
+    .coach-day-panel { top: 32px; right: 4px; width: calc(100% - 8px); max-height: calc(100% - 38px); }
+  }
+
   .chart-detail {
     font-size: 12px;
     color: var(--text-muted);
@@ -576,6 +665,7 @@
       <button class="tab" data-tab="planning">Planning</button>
       <button class="tab" data-tab="zones">Zones</button>
       <button class="tab" data-tab="sante">Santé</button>
+      <button class="tab" data-tab="coach">Coach</button>
     </div>
   </div>
   <div class="container">
@@ -583,6 +673,7 @@
     <div class="panel" id="panel-planning"></div>
     <div class="panel" id="panel-zones"></div>
     <div class="panel" id="panel-sante"></div>
+    <div class="panel" id="panel-coach"></div>
   </div>
   <div class="foot" id="foot" style="display:none">Onglet Planning : touche une semaine pour voir le détail par jour.</div>
 
@@ -629,8 +720,15 @@
           btn.classList.add("active");
           document.getElementById(`panel-${btn.dataset.tab}`).classList.add("active");
           document.body.classList.toggle("apercu-active", btn.dataset.tab === "apercu");
+          document.body.classList.toggle("coach-active", btn.dataset.tab === "coach");
+          if (btn.dataset.tab !== "coach") closeCoachDayPanel();
           document.getElementById("foot").style.display = btn.dataset.tab === "planning" ? "block" : "none";
         });
+      });
+      document.addEventListener("click", event => {
+        const popup = document.getElementById("coach-day-panel");
+        if (!popup || popup.hidden || popup.contains(event.target) || event.target.closest(".coach-day-button")) return;
+        closeCoachDayPanel();
       });
     }
 
@@ -836,6 +934,219 @@
       return String(value ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
     }
 
+    let coachCalendarMessages = [];
+    let coachCalendarToken = "";
+    let coachCalendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let coachCalendarSelectedDate = null;
+
+    function coachDateKeyFromDate(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function coachMessageDateKey(message) {
+      if (message.related_activity_date) return String(message.related_activity_date).slice(0, 10);
+      const created = new Date(message.created_at);
+      return Number.isNaN(created.getTime()) ? "" : coachDateKeyFromDate(created);
+    }
+
+    function coachLongDate(dateKey) {
+      return new Date(dateKey + "T12:00:00").toLocaleDateString("fr-FR", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
+    }
+
+    function coachMessageClasses(message) {
+      return [
+        message.read_at ? "read" : "",
+        message.priority === "important" ? "important" : "",
+        message.priority === "urgent" ? "urgent" : ""
+      ].filter(Boolean).join(" ");
+    }
+
+    function coachMessageStatus(message) {
+      if (message.priority === "urgent") return "Urgent";
+      if (message.priority === "important") return message.read_at ? "Important · lu" : "Important";
+      return message.read_at ? "Lu" : "Envoyé";
+    }
+
+    function closeCoachDayPanel() {
+      coachCalendarSelectedDate = null;
+      const popup = document.getElementById("coach-day-panel");
+      if (popup) popup.hidden = true;
+      document.querySelectorAll(".coach-day-button.selected").forEach(button => button.classList.remove("selected"));
+    }
+
+    function renderCoachCalendarMonth() {
+      const title = document.getElementById("coach-calendar-month-title");
+      const summary = document.getElementById("coach-calendar-summary");
+      const daysContainer = document.getElementById("coach-calendar-days");
+      if (!title || !summary || !daysContainer) return;
+
+      title.textContent = coachCalendarMonth.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+      const monthMessages = coachCalendarMessages.filter(message => {
+        const key = coachMessageDateKey(message);
+        if (!key) return false;
+        const date = new Date(key + "T12:00:00");
+        return date.getFullYear() === coachCalendarMonth.getFullYear() && date.getMonth() === coachCalendarMonth.getMonth();
+      });
+      const readCount = monthMessages.filter(message => message.read_at).length;
+      summary.textContent = `${monthMessages.length} message(s) · ${readCount} lu(s) · ${monthMessages.length - readCount} à suivre`;
+
+      const firstDay = new Date(coachCalendarMonth);
+      const mondayOffset = (firstDay.getDay() + 6) % 7;
+      const gridStart = new Date(firstDay);
+      gridStart.setDate(firstDay.getDate() - mondayOffset);
+      const cells = [];
+
+      for (let index = 0; index < 42; index += 1) {
+        const date = new Date(gridStart);
+        date.setDate(gridStart.getDate() + index);
+        const dateKey = coachDateKeyFromDate(date);
+        const dayMessages = coachCalendarMessages
+          .filter(message => coachMessageDateKey(message) === dateKey)
+          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        const outside = date.getMonth() !== coachCalendarMonth.getMonth();
+        const selected = dateKey === coachCalendarSelectedDate;
+        const snippets = dayMessages.slice(0, 2).map(message => `
+          <span class="coach-calendar-message ${coachMessageClasses(message)}">${escapeHtml(message.category || "Conseil")} · ${escapeHtml(message.body || "")}</span>
+        `).join("");
+        cells.push(`
+          <button class="coach-day-button${outside ? " outside" : ""}${selected ? " selected" : ""}" type="button" data-coach-date="${dateKey}" aria-label="Ouvrir le ${escapeHtml(coachLongDate(dateKey))}">
+            <span class="coach-day-number">${date.getDate()}</span>
+            ${snippets}
+            ${dayMessages.length > 2 ? `<span class="coach-calendar-more">+${dayMessages.length - 2} autre(s)</span>` : ""}
+          </button>
+        `);
+      }
+      daysContainer.innerHTML = cells.join("");
+      daysContainer.querySelectorAll(".coach-day-button").forEach(button => {
+        button.addEventListener("click", event => {
+          event.stopPropagation();
+          coachCalendarSelectedDate = button.dataset.coachDate;
+          renderCoachCalendarMonth();
+          renderCoachDayPanel();
+        });
+      });
+    }
+
+    function renderCoachDayPanel() {
+      const popup = document.getElementById("coach-day-panel");
+      if (!popup || !coachCalendarSelectedDate) {
+        if (popup) popup.hidden = true;
+        return;
+      }
+
+      const dayMessages = coachCalendarMessages
+        .filter(message => coachMessageDateKey(message) === coachCalendarSelectedDate)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const historyHtml = dayMessages.length ? dayMessages.map(message => {
+        const created = new Date(message.created_at);
+        const time = Number.isNaN(created.getTime()) ? "" : created.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+        return `
+          <div class="coach-message-history-item ${coachMessageClasses(message)}">
+            <div class="coach-message-meta">${escapeHtml(message.category || "Conseil")} · ${time} · ${coachMessageStatus(message)}</div>
+            <div class="coach-message-body">${escapeHtml(message.body || "")}</div>
+          </div>`;
+      }).join("") : '<div class="coach-day-empty">Aucun message envoyé pour cette journée.</div>';
+
+      popup.innerHTML = `
+        <div class="coach-day-head">
+          <div><div class="coach-day-kicker">Journée sélectionnée</div><div class="coach-day-title">${escapeHtml(coachLongDate(coachCalendarSelectedDate))}</div></div>
+          <button class="coach-day-close" id="coach-day-close" type="button" aria-label="Fermer">✕</button>
+        </div>
+        <div class="coach-day-history">${historyHtml}</div>
+        <div class="coach-day-form">
+          <div class="coach-day-form-row">
+            <div><label for="coach-calendar-category">Type</label><select id="coach-calendar-category"><option>Conseil</option><option>Information</option><option>Action demandée</option></select></div>
+            <div><label for="coach-calendar-priority">Priorité</label><select id="coach-calendar-priority"><option value="normal">Normal</option><option value="important">Important</option><option value="urgent">Urgent</option></select></div>
+          </div>
+          <label for="coach-calendar-body">Message au sportif</label>
+          <textarea id="coach-calendar-body" maxlength="1000" placeholder="Écris une consigne pour cette journée…"></textarea>
+          <button class="coach-day-send" id="coach-calendar-send" type="button">Envoyer le message</button>
+          <div class="coach-day-feedback" id="coach-calendar-feedback">Le sportif recevra une notification dans ATHIA.</div>
+        </div>`;
+      popup.hidden = false;
+
+      popup.querySelector("#coach-day-close").addEventListener("click", closeCoachDayPanel);
+      popup.querySelector("#coach-calendar-send").addEventListener("click", async () => {
+        const sendButton = popup.querySelector("#coach-calendar-send");
+        const feedback = popup.querySelector("#coach-calendar-feedback");
+        const body = popup.querySelector("#coach-calendar-body").value.trim();
+        if (body.length < 2) {
+          feedback.textContent = "Écris un message avant de l’envoyer.";
+          return;
+        }
+        sendButton.disabled = true;
+        feedback.textContent = "Envoi…";
+        const result = await rpc("send_coach_message", coachCalendarToken, {
+          p_body: body,
+          p_category: popup.querySelector("#coach-calendar-category").value,
+          p_priority: popup.querySelector("#coach-calendar-priority").value,
+          p_related_activity_date: coachCalendarSelectedDate
+        });
+        if (result === null) {
+          feedback.textContent = "Envoi impossible. Vérifie la migration Supabase du calendrier coach.";
+          sendButton.disabled = false;
+          return;
+        }
+        coachCalendarMessages = await rpc("get_coach_messages", coachCalendarToken) || [];
+        renderCoachMessageComposer(coachCalendarMessages, coachCalendarToken);
+        renderCoachCalendarMonth();
+        renderCoachDayPanel();
+        const refreshedFeedback = document.getElementById("coach-calendar-feedback");
+        if (refreshedFeedback) refreshedFeedback.textContent = "Message envoyé et ajouté au calendrier.";
+      });
+    }
+
+    function renderCoachCalendar(messagesRows, token) {
+      coachCalendarMessages = Array.isArray(messagesRows) ? messagesRows : [];
+      coachCalendarToken = token;
+      const panel = document.getElementById("panel-coach");
+      if (!panel) return;
+      panel.innerHTML = `
+        <div class="coach-calendar-page">
+          <div class="coach-calendar-toolbar">
+            <div>
+              <div class="coach-month-nav">
+                <button class="coach-month-btn" id="coach-month-prev" type="button" aria-label="Mois précédent">‹</button>
+                <div class="coach-month-title" id="coach-calendar-month-title"></div>
+                <button class="coach-month-btn" id="coach-month-next" type="button" aria-label="Mois suivant">›</button>
+              </div>
+              <div class="coach-calendar-summary" id="coach-calendar-summary"></div>
+            </div>
+            <div class="coach-calendar-legend">
+              <span class="coach-legend-item"><span class="coach-legend-dot"></span>Envoyé</span>
+              <span class="coach-legend-item"><span class="coach-legend-dot read"></span>Lu</span>
+              <span class="coach-legend-item"><span class="coach-legend-dot important"></span>Important</span>
+            </div>
+          </div>
+          <div class="coach-calendar-shell" id="coach-calendar-shell">
+            <div class="coach-calendar-grid">
+              <div class="coach-weekdays">${["Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam.", "Dim."].map(day => `<div class="coach-weekday">${day}</div>`).join("")}</div>
+              <div class="coach-days" id="coach-calendar-days"></div>
+            </div>
+            <aside class="coach-day-panel" id="coach-day-panel" hidden></aside>
+          </div>
+        </div>`;
+
+      panel.querySelector("#coach-month-prev").addEventListener("click", () => {
+        coachCalendarMonth = new Date(coachCalendarMonth.getFullYear(), coachCalendarMonth.getMonth() - 1, 1);
+        closeCoachDayPanel();
+        renderCoachCalendarMonth();
+      });
+      panel.querySelector("#coach-month-next").addEventListener("click", () => {
+        coachCalendarMonth = new Date(coachCalendarMonth.getFullYear(), coachCalendarMonth.getMonth() + 1, 1);
+        closeCoachDayPanel();
+        renderCoachCalendarMonth();
+      });
+      panel.onclick = event => {
+        const popup = document.getElementById("coach-day-panel");
+        if (!popup || popup.hidden || popup.contains(event.target) || event.target.closest(".coach-day-button")) return;
+        closeCoachDayPanel();
+      };
+      renderCoachCalendarMonth();
+    }
+
     function renderCoachMessageComposer(messagesRows, token) {
       const card = document.getElementById("coach-message-card");
       if (!card) return;
@@ -871,6 +1182,7 @@
         }
         const refreshed = await rpc("get_coach_messages", token) || [];
         renderCoachMessageComposer(refreshed, token);
+        renderCoachCalendar(refreshed, token);
         document.getElementById("coach-message-feedback").textContent = "Message envoyé.";
       });
     }
@@ -1895,6 +2207,7 @@
       renderApercu(metricsRows || []);
       renderProfilCoureur((riderProfileRows && riderProfileRows[0]) || null);
       renderOverviewSummary(summaryRows || [], metricsRows || [], messagesRows || [], token);
+      renderCoachCalendar(messagesRows || [], token);
       renderPlanning(summaryRows || []);
       renderZonesV2((zonesRows && zonesRows[0]) || null);
       renderSante(metricsRows || []);
