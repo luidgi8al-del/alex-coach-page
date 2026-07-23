@@ -448,6 +448,10 @@
   }
   .coach-day-form textarea { min-height: 58px; resize: none; }
   .coach-day-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .coach-day-past-note {
+    border-top: 1px solid var(--border-light); padding-top: 10px;
+    color: var(--text-muted); font-size: 10.5px; line-height: 1.4;
+  }
   .coach-day-send {
     border: none; border-radius: 8px; background: var(--teal); color: #fff;
     padding: 8px 11px; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer;
@@ -1048,13 +1052,8 @@
             <div class="coach-message-body">${escapeHtml(message.body || "")}</div>
           </div>`;
       }).join("") : '<div class="coach-day-empty">Aucun message envoyé pour cette journée.</div>';
-
-      popup.innerHTML = `
-        <div class="coach-day-head">
-          <div><div class="coach-day-kicker">Journée sélectionnée</div><div class="coach-day-title">${escapeHtml(coachLongDate(coachCalendarSelectedDate))}</div></div>
-          <button class="coach-day-close" id="coach-day-close" type="button" aria-label="Fermer">✕</button>
-        </div>
-        <div class="coach-day-history">${historyHtml}</div>
+      const canSendMessage = coachCalendarSelectedDate >= coachDateKeyFromDate(new Date());
+      const composerHtml = canSendMessage ? `
         <div class="coach-day-form">
           <div class="coach-day-form-row">
             <div><label for="coach-calendar-category">Type</label><select id="coach-calendar-category"><option>Conseil</option><option>Information</option><option>Action demandée</option></select></div>
@@ -1064,11 +1063,24 @@
           <textarea id="coach-calendar-body" maxlength="1000" placeholder="Écris une consigne pour cette journée…"></textarea>
           <button class="coach-day-send" id="coach-calendar-send" type="button">Envoyer le message</button>
           <div class="coach-day-feedback" id="coach-calendar-feedback">Le sportif recevra une notification dans ATHIA.</div>
+        </div>` : `
+        <div class="coach-day-past-note">
+          Journée passée : les messages restent consultables, mais aucun nouveau message ne peut être envoyé pour cette date.
         </div>`;
+
+      popup.innerHTML = `
+        <div class="coach-day-head">
+          <div><div class="coach-day-kicker">Journée sélectionnée</div><div class="coach-day-title">${escapeHtml(coachLongDate(coachCalendarSelectedDate))}</div></div>
+          <button class="coach-day-close" id="coach-day-close" type="button" aria-label="Fermer">✕</button>
+        </div>
+        <div class="coach-day-history">${historyHtml}</div>
+        ${composerHtml}`;
       popup.hidden = false;
 
       popup.querySelector("#coach-day-close").addEventListener("click", closeCoachDayPanel);
-      popup.querySelector("#coach-calendar-send").addEventListener("click", async () => {
+      const calendarSendButton = popup.querySelector("#coach-calendar-send");
+      if (!calendarSendButton) return;
+      calendarSendButton.addEventListener("click", async () => {
         const sendButton = popup.querySelector("#coach-calendar-send");
         const feedback = popup.querySelector("#coach-calendar-feedback");
         const body = popup.querySelector("#coach-calendar-body").value.trim();
