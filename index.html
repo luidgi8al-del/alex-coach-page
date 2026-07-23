@@ -118,6 +118,7 @@
   .zone-card-icon { color: var(--teal); font-size: 16px; }
   .zone-total { text-align: right; font-size: 16px; font-weight: 600; white-space: nowrap; }
   .zone-total small { display: block; color: var(--text-hint); font-size: 9.5px; font-weight: 400; margin-top: 1px; }
+  .zone-total small.zone-estimated { color: var(--orange); }
   .zone-overview { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 12px; align-items: center; margin-bottom: 7px; }
   .zone-donut { width: 132px; height: 132px; border-radius: 50%; display: grid; place-items: center; }
   .zone-donut-center { width: 54%; height: 54%; border-radius: 50%; display: grid; place-content: center; text-align: center; background: #fff; }
@@ -1051,9 +1052,14 @@
 
     function aggregateZonePayloadV2(payload, range) {
       if (payload.legacy || payload.days.length === 0) {
-        return payload.zones.map(zone => ({ ...zone, minutes: Number(zone.minutes || 0) }));
+        return payload.zones.map(zone => ({
+          ...zone,
+          minutes: Number(zone.minutes || 0),
+          estimatedMinutes: Number(zone.estimatedMinutes || 0)
+        }));
       }
       const values = payload.zones.map(() => 0);
+      const estimatedValues = payload.zones.map(() => 0);
       const startKey = zoneDateKey(range.start);
       const endKey = zoneDateKey(range.end);
       payload.days.forEach(day => {
@@ -1061,8 +1067,17 @@
         day.minutes.forEach((minutes, index) => {
           if (index < values.length) values[index] += Number(minutes || 0);
         });
+        if (Array.isArray(day.estimatedMinutes)) {
+          day.estimatedMinutes.forEach((minutes, index) => {
+            if (index < estimatedValues.length) estimatedValues[index] += Number(minutes || 0);
+          });
+        }
       });
-      return payload.zones.map((zone, index) => ({ ...zone, minutes: values[index] || 0 }));
+      return payload.zones.map((zone, index) => ({
+        ...zone,
+        minutes: values[index] || 0,
+        estimatedMinutes: estimatedValues[index] || 0
+      }));
     }
 
     function zoneDurationLabel(minutes) {
@@ -1090,6 +1105,7 @@
       const compareZones = compareRange && !payload.legacy ? aggregateZonePayloadV2(payload, compareRange) : [];
       const values = zones.map(zone => Number(zone.minutes || 0));
       const total = values.reduce((sum, value) => sum + value, 0);
+      const estimatedTotal = zones.reduce((sum, zone) => sum + Number(zone.estimatedMinutes || 0), 0);
       const percentages = values.map(value => total > 0 ? value / total * 100 : 0);
       const pair = kind === "power" ? [0, 1] : [1, 2];
       const pairPercent = Math.round((percentages[pair[0]] || 0) + (percentages[pair[1]] || 0));
@@ -1114,7 +1130,12 @@
       return `<section class="card zone-card">
         <div class="zone-card-head">
           <div class="zone-card-title"><span class="zone-card-icon">${icon}</span>${title}</div>
-          <div class="zone-total">${zoneDurationLabel(total)}<small>${totalContext}</small></div>
+          <div class="zone-total">${zoneDurationLabel(total)}
+            <small>${totalContext}</small>
+            ${estimatedTotal > 0
+              ? `<small class="zone-estimated">${zoneDurationLabel(estimatedTotal)} estimées faute de courbe</small>`
+              : "<small>courbes mesurées</small>"}
+          </div>
         </div>
         <div class="zone-overview">
           <div class="zone-donut" style="background:${zoneDonutGradient(percentages)}">
