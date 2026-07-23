@@ -558,7 +558,7 @@
     .fitness-card { padding: 8px 12px 6px; }
     .fitness-card h3 { margin-bottom: 5px; }
     .fitness-card .legend { margin-bottom: 3px; font-size: 9.5px; }
-    .fitness-card .chart-detail { display: none; }
+    .fitness-card .chart-detail { display: block; min-height: 11px; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .stat-grid { flex-basis: 70px; }
   }
   @media (max-width: 899px) {
@@ -722,7 +722,7 @@
           <span><span class="dot" style="background:var(--teal)"></span>TSB (forme)</span>
         </div>
         <canvas id="chart-forme" width="900" height="250"></canvas>
-        <div class="chart-detail" id="chart-forme-detail">Touche la courbe pour voir un jour précis.</div>
+        <div class="chart-detail" id="chart-forme-detail" aria-live="polite">Survole la courbe pour voir un jour précis.</div>
       `;
       panel.appendChild(card);
 
@@ -898,7 +898,7 @@
       const x = i => pad.left + (i / (rows.length - 1)) * plotW;
       const yLeft = v => pad.top + (1 - Number(v) / leftMax) * plotH;
       const yRight = v => pad.top + (1 - (Number(v) + rightExtent) / (rightExtent * 2)) * plotH;
-      let markerIndex = null;
+      let markerIndex = rows.length - 1;
 
       const drawSeries = (key, color, mapper) => {
         ctx.beginPath();
@@ -950,6 +950,28 @@
           ctx.strokeStyle = "#7A7F7D"; ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(px, pad.top); ctx.lineTo(px, h - pad.bottom); ctx.stroke();
           ctx.setLineDash([]);
+          [
+            ["ctl", "#185FA5", yLeft],
+            ["atl", "#D9820B", yLeft],
+            ["tsb", "#0F6E56", yRight]
+          ].forEach(([key, color, mapper]) => {
+            const value = rows[markerIndex][key];
+            if (value == null || !Number.isFinite(Number(value))) return;
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 2;
+            ctx.arc(px, mapper(value), 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          });
+        }
+      };
+
+      const updateDetail = () => {
+        const r = rows[markerIndex];
+        if (detailEl && r) {
+          detailEl.innerHTML = `<b>${jourLabel(r.date)}</b> — CTL ${r.ctl != null ? Math.round(r.ctl) : "--"} · ATL ${r.atl != null ? Math.round(r.atl) : "--"} · TSB ${r.tsb != null ? (r.tsb >= 0 ? "+" : "") + Math.round(r.tsb) : "--"}`;
         }
       };
 
@@ -959,11 +981,11 @@
         markerIndex = Math.max(0, Math.min(rows.length - 1,
           Math.round((relX - pad.left) / plotW * (rows.length - 1))));
         draw();
-        const r = rows[markerIndex];
-        if (detailEl) detailEl.innerHTML = `<b>${jourLabel(r.date)}</b> — CTL ${r.ctl != null ? Math.round(r.ctl) : "--"} · ATL ${r.atl != null ? Math.round(r.atl) : "--"} · TSB ${r.tsb != null ? (r.tsb >= 0 ? "+" : "") + Math.round(r.tsb) : "--"}`;
+        updateDetail();
       };
 
       draw();
+      updateDetail();
       canvas.addEventListener("mousemove", e => handlePointer(e.clientX));
       canvas.addEventListener("click", e => handlePointer(e.clientX));
       canvas.addEventListener("touchstart", e => handlePointer(e.touches[0].clientX), { passive: true });
