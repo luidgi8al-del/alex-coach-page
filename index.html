@@ -338,10 +338,12 @@
   .health-legend-line.heart { background: #D4537E; }
   .health-legend-band { width: 18px; height: 9px; background: var(--teal-light-bg); }
   .health-tsb-badge { background: var(--teal-light-bg); color: var(--teal); border-radius: 14px; padding: 5px 9px; font-size: 10px; white-space: nowrap; }
-  .health-chart-svg { display: block; width: 100%; height: auto; max-height: 300px; }
+  .health-chart-svg { display: block; width: 100%; height: auto; max-height: 300px; cursor: crosshair; touch-action: none; }
   .health-chart-svg .grid { stroke: var(--border); stroke-width: 1; }
   .health-chart-svg .band { fill: var(--teal-light-bg); }
   .health-chart-svg .reference { stroke: var(--text-hint); stroke-width: 1; stroke-dasharray: 5 5; }
+  .health-chart-svg .hover-line { stroke: var(--text-hint); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+  .health-chart-svg .hover-point { stroke: #fff; stroke-width: 2; pointer-events: none; }
   .health-chart-svg .sleep-line, .health-chart-svg .heart-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
   .health-chart-svg .sleep-line { stroke: var(--teal); }
   .health-chart-svg .heart-line { stroke: #D4537E; }
@@ -349,6 +351,8 @@
   .health-chart-svg .heart-point { fill: #D4537E; }
   .health-chart-svg text { fill: var(--text-muted); font-size: 10px; }
   .health-chart-svg .axis-title, .health-chart-svg .latest { fill: var(--text-primary); font-weight: 600; }
+  .health-chart-detail { min-height: 17px; color: var(--text-muted); font-size: 10.5px; text-align: center; }
+  .health-chart-detail strong { color: var(--text-primary); font-weight: 600; }
   .health-signals { margin-top: 2px; }
   .health-signals-title { font-size: 13px; font-weight: 600; }
   .health-signals-sub { color: var(--text-muted); font-size: 10px; margin-top: 2px; }
@@ -1438,7 +1442,7 @@
         <rect class="band" x="${left}" y="${heartY(heartReference + 2)}" width="${right - left}" height="${Math.max(1, heartY(heartReference - 2) - heartY(heartReference + 2))}"></rect>
         <line class="reference" x1="${left}" y1="${heartY(heartReference)}" x2="${right}" y2="${heartY(heartReference)}"></line>`;
 
-      svg.innerHTML = `
+      const baseMarkup = `
         <title>Sommeil et fréquence cardiaque au repos</title>
         <desc>Deux courbes alignées sur ${rows.length} jours avec les références personnelles calculées sur 28 jours.</desc>
         ${sleepGrid}${heartGrid}${sleepBand}${heartBand}
@@ -1452,6 +1456,38 @@
         ${latestHeart == null ? "" : texteSvgSante(right, 160, `${Math.round(latestHeart)} bpm au dernier relevé`, "latest", "end")}
         ${dateIndexes.map((index, position) => texteSvgSante(xFor(index), 294, formatDateSante(rows[index].date), "", position === 0 ? "start" : position === dateIndexes.length - 1 ? "end" : "middle")).join("")}
       `;
+
+      const detail = document.getElementById("health-chart-detail");
+      const renderSelection = index => {
+        const row = rows[index];
+        if (!row) return;
+        const sleep = row.sleep_hours == null ? null : Number(row.sleep_hours);
+        const heart = row.resting_hr == null ? null : Number(row.resting_hr);
+        const x = xFor(index);
+        svg.innerHTML = `${baseMarkup}
+          <line class="hover-line" x1="${x}" y1="${topSleep}" x2="${x}" y2="${bottomHeart}"></line>
+          ${Number.isFinite(sleep) ? `<circle class="hover-point sleep-point" cx="${x}" cy="${sleepY(sleep)}" r="6"></circle>` : ""}
+          ${Number.isFinite(heart) ? `<circle class="hover-point heart-point" cx="${x}" cy="${heartY(heart)}" r="6"></circle>` : ""}`;
+        if (detail) {
+          detail.innerHTML = `<strong>${formatDateSante(row.date)}</strong> · Sommeil : ${Number.isFinite(sleep) ? formatSommeilCoach(sleep) : "aucun relevé"} · FC repos : ${Number.isFinite(heart) ? `${Math.round(heart)} bpm` : "aucun relevé"}`;
+        }
+      };
+      const selectFromPointer = event => {
+        const rect = svg.getBoundingClientRect();
+        const clientX = event.touches?.[0]?.clientX ?? event.clientX;
+        if (!rect.width || !Number.isFinite(clientX)) return;
+        const svgX = (clientX - rect.left) / rect.width * 1000;
+        const ratio = (svgX - left) / (right - left);
+        const index = Math.round(Math.max(0, Math.min(1, ratio)) * Math.max(0, rows.length - 1));
+        renderSelection(index);
+      };
+
+      const latestAvailableIndex = Math.max(latestSleepIndex, latestHeartIndex, 0);
+      renderSelection(latestAvailableIndex);
+      svg.addEventListener("mousemove", selectFromPointer);
+      svg.addEventListener("click", selectFromPointer);
+      svg.addEventListener("touchstart", selectFromPointer, { passive: true });
+      svg.addEventListener("touchmove", selectFromPointer, { passive: true });
     }
 
     function updateSanteDetailsToggle(signalCount) {
@@ -1472,17 +1508,18 @@
     function renderSante(metricsRows) {
       const panel = document.getElementById("panel-sante");
       santeMetricsCache = metricsRows || [];
-      const avecSante = santeMetricsCache
-        .filter(row => row.sleep_hours != null || row.resting_hr != null)
+      const orderedMetrics = santeMetricsCache
         .slice()
         .sort((a, b) => a.date.localeCompare(b.date));
+      const avecSante = orderedMetrics
+        .filter(row => row.sleep_hours != null || row.resting_hr != null);
       if (avecSante.length === 0) {
         panel.innerHTML = '<div class="empty">Pas encore de données de santé partagées.</div>';
         return;
       }
 
-      const rows = avecSante.slice(-santePeriode);
-      const referenceRows = avecSante.slice(-28);
+      const rows = orderedMetrics.slice(-santePeriode);
+      const referenceRows = orderedMetrics.slice(-28);
       const lastSeven = rows.slice(-7);
       const sleepReference = moyenneSante(referenceRows, "sleep_hours");
       const heartReference = moyenneSante(referenceRows, "resting_hr");
@@ -1492,6 +1529,7 @@
       const latestHeartIndex = santeDernierIndex(rows, "resting_hr");
       const latestSleep = latestSleepIndex >= 0 ? Number(rows[latestSleepIndex].sleep_hours) : null;
       const latestHeart = latestHeartIndex >= 0 ? Number(rows[latestHeartIndex].resting_hr) : null;
+      const healthDays = rows.filter(row => row.sleep_hours != null || row.resting_hr != null).length;
       const completeDays = rows.filter(row => row.sleep_hours != null && row.resting_hr != null).length;
       const latestTsbRow = santeMetricsCache
         .filter(row => row.tsb != null)
@@ -1542,7 +1580,7 @@
         </div>
         <div class="card health-chart-card">
           <div class="health-chart-head">
-            <div><div class="health-chart-title">Évolution et références personnelles</div><div class="health-chart-sub">${completeDays}/${rows.length} jours avec sommeil et FC repos</div></div>
+            <div><div class="health-chart-title">Évolution et références personnelles</div><div class="health-chart-sub">${healthDays}/${rows.length} jours avec un relevé · ${completeDays} jour(s) complet(s)</div></div>
             <span class="health-tsb-badge">Contexte entraînement : TSB ${latestTsb == null ? "—" : `${latestTsb > 0 ? "+" : ""}${latestTsb}`}</span>
           </div>
           <div class="health-chart-meta">
@@ -1554,6 +1592,7 @@
             <span>Les deux courbes utilisent les mêmes dates.</span>
           </div>
           <svg class="health-chart-svg" id="health-trend-chart" viewBox="0 0 1000 300" role="img" aria-label="Sommeil et fréquence cardiaque au repos"></svg>
+          <div class="health-chart-detail" id="health-chart-detail" aria-live="polite"></div>
         </div>
         <div class="health-signals">
           <div class="health-signals-head">
