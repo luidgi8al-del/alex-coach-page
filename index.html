@@ -150,64 +150,150 @@
     .zone-detail-row { grid-template-columns: minmax(88px, 1fr) minmax(45px, .75fr) 65px; gap: 5px; }
   }
 
-  .week-card {
-    background: #fff;
-    border: 0.5px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 14px;
-    overflow: hidden;
-  }
-  .week-head {
+  .planning-toolbar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    cursor: pointer;
-  }
-  .week-head:hover { background: #fafafa; }
-  .week-head .label { font-size: 14px; font-weight: 600; }
-  .chev { display: inline-block; margin-left: 8px; color: var(--text-hint); font-size: 11px; transition: transform 0.15s; }
-  .chev.open { transform: rotate(90deg); }
-  .week-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-top: 0.5px solid var(--border);
-  }
-  .week-stats > div { padding: 10px 6px; text-align: center; border-right: 0.5px solid var(--border); }
-  .week-stats > div:last-child { border-right: none; }
-  .week-stats .stat-label { font-size: 10px; color: var(--text-muted); }
-  .week-stats .stat-value { font-size: 16px; font-weight: 600; margin-top: 2px; }
-  .week-stats .stat-value.accent { color: var(--teal); }
-  .detail-wrap { display: none; padding: 12px 16px 14px; border-top: 0.5px solid var(--border); }
-  .detail-wrap.open { display: block; }
-  .day-card {
-    border: 0.5px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
+    justify-content: space-between;
+    gap: 12px;
     margin-bottom: 10px;
   }
-  .day-card:last-child { margin-bottom: 0; }
-  .day-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 9px 12px;
-    background: var(--teal-light-bg);
+  .planning-month-nav { display: flex; align-items: center; gap: 7px; }
+  .planning-month-button {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--teal);
+    cursor: pointer;
+    font-size: 16px;
   }
-  .day-head .day-title { font-size: 12.5px; font-weight: 600; }
-  .day-head .day-type { font-size: 10.5px; color: var(--teal); }
-  .metric-row {
+  .planning-month-button:disabled { color: var(--text-hint); cursor: default; opacity: .55; }
+  .planning-month-select {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text-primary);
+    padding: 6px 9px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .planning-month-context { color: var(--text-muted); font-size: 10.5px; }
+  .planning-month-stats {
     display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-    border-top: 0.5px solid var(--border-light);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
   }
-  .metric-row.row2 { background: var(--row2-bg); }
-  .metric-row > div { padding: 8px 4px; text-align: center; border-right: 0.5px solid var(--border-light); }
-  .metric-row > div:last-child { border-right: none; }
-  .metric-label { font-size: 9px; color: var(--text-hint); }
-  .metric-value { font-size: 11.5px; font-weight: 600; margin-top: 2px; }
-  .metric-value.muted { color: var(--text-hint); font-weight: 400; }
+  .planning-stat {
+    background: #fff;
+    border: .5px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 12px;
+  }
+  .planning-stat-label { color: var(--text-muted); font-size: 10px; }
+  .planning-stat-value { font-size: 15px; font-weight: 600; margin-top: 2px; }
+  .planning-stat-note { color: var(--text-hint); font-size: 9.5px; font-weight: 400; }
+  .planning-table-wrap {
+    background: #fff;
+    border: .5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .planning-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .planning-table th {
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 8px 12px;
+    text-align: left;
+    background: var(--row2-bg);
+  }
+  .planning-table td {
+    border-top: 1px solid var(--border-light);
+    font-size: 12px;
+    padding: 9px 12px;
+    vertical-align: middle;
+  }
+  .planning-table th.numeric, .planning-table td.numeric { text-align: right; }
+  .planning-table .week-row { cursor: pointer; }
+  .planning-table .week-row:hover, .planning-table .week-row.open { background: var(--teal-light-bg); }
+  .planning-week-label { display: block; font-weight: 600; }
+  .planning-week-range { color: var(--text-hint); display: block; font-size: 9.5px; margin-top: 2px; }
+  .planning-load { min-width: 110px; }
+  .planning-load-value { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .planning-load-track { height: 6px; margin-top: 4px; border-radius: 4px; background: var(--border-light); overflow: hidden; }
+  .planning-load-fill { height: 100%; border-radius: 4px; background: var(--teal); }
+  .planning-week-toggle {
+    border: 0;
+    background: transparent;
+    color: var(--teal);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 3px 6px;
+  }
+  .planning-detail {
+    display: none;
+    background: #fff;
+    border: .5px solid var(--border);
+    border-radius: 12px;
+    margin-top: 10px;
+    padding: 12px;
+  }
+  .planning-detail.open { display: block; }
+  .planning-detail-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .planning-detail-title { font-size: 13px; font-weight: 600; }
+  .planning-detail-sub { color: var(--text-muted); font-size: 10px; margin-top: 2px; }
+  .planning-detail-close {
+    border: 1px solid var(--teal);
+    border-radius: 7px;
+    background: #fff;
+    color: var(--teal);
+    cursor: pointer;
+    padding: 6px 9px;
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+  .planning-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .planning-day {
+    min-width: 0;
+    border-left: 1px solid var(--border-light);
+    border-top: 1px solid var(--border-light);
+    padding: 8px;
+  }
+  .planning-day:first-child { border-left: 0; }
+  .planning-day.today { background: var(--teal-light-bg); }
+  .planning-day-head { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-bottom: 8px; }
+  .planning-day-title { font-size: 10.5px; font-weight: 600; }
+  .planning-day-count { color: var(--text-hint); font-size: 9px; }
+  .planning-session {
+    border-left: 3px solid var(--teal);
+    padding-left: 7px;
+    margin-top: 9px;
+  }
+  .planning-session:first-child { margin-top: 0; }
+  .planning-session-title { font-size: 10.5px; font-weight: 600; line-height: 1.25; }
+  .planning-session-meta { color: var(--text-muted); font-size: 9.5px; line-height: 1.35; margin-top: 3px; }
+  .planning-session-extra { color: var(--text-hint); font-size: 9px; line-height: 1.35; margin-top: 2px; }
+  .planning-rest { color: var(--text-hint); font-size: 9.5px; }
+  @media (max-width: 900px) {
+    .planning-days { grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); }
+  }
+  @media (max-width: 620px) {
+    .planning-toolbar { align-items: flex-start; flex-direction: column; }
+    .planning-month-stats { grid-template-columns: 1fr; gap: 6px; }
+    .planning-table th:nth-child(4), .planning-table td:nth-child(4),
+    .planning-table th:nth-child(5), .planning-table td:nth-child(5) { display: none; }
+    .planning-table th, .planning-table td { padding: 8px 7px; }
+  }
   .foot { max-width: 680px; margin: 18px auto 0; padding: 0 16px; font-size: 11.5px; color: var(--text-hint); }
   .santé-row {
     display: flex;
@@ -229,28 +315,6 @@
   }
   .chart-detail b { color: var(--text-primary); }
   canvas { cursor: crosshair; touch-action: none; }
-
-  .month-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 22px 0 10px;
-    cursor: pointer;
-  }
-  .month-toggle:first-of-type { margin-top: 4px; }
-  .month-toggle .month-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--teal);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
-  .month-toggle .month-line { flex: 1; height: 1px; background: var(--border); }
-  .month-toggle .month-chev { color: var(--text-hint); font-size: 11px; transition: transform 0.15s; }
-  .month-toggle .month-chev.open { transform: rotate(90deg); }
-  .month-weeks { display: none; }
-  .month-weeks.open { display: block; }
 
   .pheno-badge {
     display: inline-block;
@@ -1271,6 +1335,22 @@
 
     let semaineOuverteIdx = null;
 
+
+    let planningMonths = [];
+    let planningMonthIndex = 0;
+
+    function planningDateKey(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function planningWeekRange(weekKey) {
+      const start = new Date(weekKey + "T12:00:00");
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      const options = { day: "numeric", month: "short" };
+      return `${start.toLocaleDateString("fr-FR", options)} – ${end.toLocaleDateString("fr-FR", options)}`;
+    }
+
     function renderPlanning(rows) {
       const panel = document.getElementById("panel-planning");
       if (!rows || rows.length === 0) {
@@ -1286,125 +1366,178 @@
         }
         const s = semaines.get(w.key);
         s.sorties += 1;
-        s.dureeMin += r.duration_min || 0;
-        s.distanceKm += r.distance_km || 0;
-        s.charge += r.charge || 0;
+        s.dureeMin += Number(r.duration_min || 0);
+        s.distanceKm += Number(r.distance_km || 0);
+        s.charge += Number(r.charge || 0);
         s.jours.push(r);
       }
       for (const [, s] of semaines) {
-        s.jours.sort((a, b) => b.activity_date.localeCompare(a.activity_date));
+        s.jours.sort((a, b) => a.activity_date.localeCompare(b.activity_date));
       }
 
       const semainesTriees = [...semaines.entries()].sort((a, b) => b[0].localeCompare(a[0]));
       const MOIS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
                     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-
-      // Regroupe par mois, dans l'ordre (le plus récent en premier)
       const parMois = new Map();
       semainesTriees.forEach(([key, s]) => {
-        const dMois = new Date(key + "T00:00:00");
+        const dMois = new Date(key + "T12:00:00");
         const moisKey = `${dMois.getFullYear()}-${dMois.getMonth()}`;
-        const moisLabel = `${MOIS[dMois.getMonth()]} ${dMois.getFullYear()}`;
-        if (!parMois.has(moisKey)) parMois.set(moisKey, { label: moisLabel, semaines: [] });
+        if (!parMois.has(moisKey)) {
+          parMois.set(moisKey, {
+            key: moisKey,
+            label: `${MOIS[dMois.getMonth()]} ${dMois.getFullYear()}`,
+            semaines: []
+          });
+        }
         parMois.get(moisKey).semaines.push([key, s]);
       });
 
-      panel.innerHTML = "";
-      let premierMois = true;
-      let idxGlobal = 0;
-
-      for (const [moisKey, mois] of parMois) {
-        const moisId = `mois-${moisKey}`;
-        const toggle = document.createElement("div");
-        toggle.className = "month-toggle";
-        toggle.innerHTML = `<span class="month-label">${mois.label}</span><span class="month-line"></span><span class="month-chev${premierMois ? " open" : ""}">&#9656;</span>`;
-        toggle.addEventListener("click", () => toggleMois(moisId, toggle));
-        panel.appendChild(toggle);
-
-        const weeksWrap = document.createElement("div");
-        weeksWrap.className = "month-weeks" + (premierMois ? " open" : "");
-        weeksWrap.id = moisId;
-
-        mois.semaines.forEach(([key, s]) => {
-          const idx = idxGlobal++;
-          const card = document.createElement("div");
-          card.className = "week-card";
-
-          const head = document.createElement("div");
-          head.className = "week-head";
-          head.innerHTML = `<span class="label">${s.label}</span><span class="chev" id="chev-${idx}">&#9656;</span>`;
-          head.addEventListener("click", () => toggleSemaine(idx));
-          card.appendChild(head);
-
-          const stats = document.createElement("div");
-          stats.className = "week-stats";
-          stats.innerHTML = `
-            <div><div class="stat-label">Charge</div><div class="stat-value accent">${s.charge}</div></div>
-            <div><div class="stat-label">Durée</div><div class="stat-value">${dureeLabel(s.dureeMin)}</div></div>
-            <div><div class="stat-label">Distance</div><div class="stat-value">${s.distanceKm.toFixed(0)} km</div></div>
-            <div><div class="stat-label">Sorties</div><div class="stat-value">${s.sorties}</div></div>
-          `;
-          card.appendChild(stats);
-
-          const wrap = document.createElement("div");
-          wrap.className = "detail-wrap";
-          wrap.id = `detail-${idx}`;
-
-          for (const j of s.jours) {
-            const dayCard = document.createElement("div");
-            dayCard.className = "day-card";
-            dayCard.innerHTML = `
-              <div class="day-head">
-                <span class="day-title">${jourLabel(j.activity_date)}</span>
-                <span class="day-type">${j.type || "Sortie"}</span>
-              </div>
-              <div class="metric-row">
-                <div><div class="metric-label">Durée</div>${fmt(dureeLabel(j.duration_min || 0), "")}</div>
-                <div><div class="metric-label">Distance</div>${fmt((j.distance_km || 0).toFixed(1), " km")}</div>
-                <div><div class="metric-label">Puiss. moy</div>${fmt(j.avg_power, " W")}</div>
-                <div><div class="metric-label">FC moy</div>${fmt(j.avg_hr, " bpm")}</div>
-              </div>
-              <div class="metric-row row2">
-                <div><div class="metric-label">Puiss. max</div>${fmt(j.max_power, " W")}</div>
-                <div><div class="metric-label">FC max</div>${fmt(j.max_hr, " bpm")}</div>
-                <div><div class="metric-label">Charge</div>${fmt(j.charge, "")}</div>
-              </div>
-            `;
-            wrap.appendChild(dayCard);
-          }
-          card.appendChild(wrap);
-          weeksWrap.appendChild(card);
-        });
-
-        panel.appendChild(weeksWrap);
-        premierMois = false;
-      }
+      planningMonths = [...parMois.values()];
+      planningMonthIndex = 0;
+      semaineOuverteIdx = null;
+      renderPlanningMonth();
     }
 
-    // Un seul mois ouvert à la fois : en ouvrir un ferme celui déjà ouvert.
-    function toggleMois(moisId, toggleEl) {
-      const wrap = document.getElementById(moisId);
-      const wasOpen = wrap.classList.contains("open");
-      document.querySelectorAll(".month-weeks.open").forEach(w => w.classList.remove("open"));
-      document.querySelectorAll(".month-chev.open").forEach(c => c.classList.remove("open"));
-      if (!wasOpen) {
-        wrap.classList.add("open");
-        toggleEl.querySelector(".month-chev").classList.add("open");
-      }
+    function renderPlanningMonth() {
+      const panel = document.getElementById("panel-planning");
+      const mois = planningMonths[planningMonthIndex];
+      if (!mois) return;
+
+      const total = mois.semaines.reduce((acc, [, s]) => {
+        acc.charge += s.charge;
+        acc.dureeMin += s.dureeMin;
+        acc.distanceKm += s.distanceKm;
+        acc.sorties += s.sorties;
+        return acc;
+      }, { charge: 0, dureeMin: 0, distanceKm: 0, sorties: 0 });
+      const maxCharge = Math.max(...mois.semaines.map(([, s]) => s.charge), 1);
+      const todayKey = planningDateKey(new Date());
+
+      const rowsHtml = mois.semaines.map(([key, s], idx) => {
+        const isOpen = semaineOuverteIdx === idx;
+        return `
+          <tr class="week-row${isOpen ? " open" : ""}" data-week-index="${idx}">
+            <td>
+              <span class="planning-week-label">${s.label}</span>
+              <span class="planning-week-range">${planningWeekRange(key)}</span>
+            </td>
+            <td class="planning-load">
+              <div class="planning-load-value"><strong>${s.charge}</strong><span class="planning-stat-note">pts</span></div>
+              <div class="planning-load-track"><div class="planning-load-fill" style="width:${Math.max(1, s.charge / maxCharge * 100).toFixed(1)}%"></div></div>
+            </td>
+            <td class="numeric">${dureeLabel(s.dureeMin)}</td>
+            <td class="numeric">${s.distanceKm.toFixed(0)} km</td>
+            <td class="numeric">${s.sorties}</td>
+            <td class="numeric"><button class="planning-week-toggle" type="button" aria-expanded="${isOpen}" aria-label="${isOpen ? "Fermer" : "Afficher"} les séances de ${s.label}">${isOpen ? "&#9652;" : "&#9662;"}</button></td>
+          </tr>`;
+      }).join("");
+
+      const detailHtml = semaineOuverteIdx === null
+        ? ""
+        : renderPlanningWeekDetail(mois.semaines[semaineOuverteIdx], todayKey);
+
+      panel.innerHTML = `
+        <div class="planning-toolbar">
+          <div class="planning-month-nav">
+            <button class="planning-month-button" id="planning-older-month" type="button" aria-label="Mois précédent" ${planningMonthIndex >= planningMonths.length - 1 ? "disabled" : ""}>&#8249;</button>
+            <select class="planning-month-select" id="planning-month-select" aria-label="Mois affiché">
+              ${planningMonths.map((item, idx) => `<option value="${idx}"${idx === planningMonthIndex ? " selected" : ""}>${item.label}</option>`).join("")}
+            </select>
+            <button class="planning-month-button" id="planning-newer-month" type="button" aria-label="Mois suivant" ${planningMonthIndex === 0 ? "disabled" : ""}>&#8250;</button>
+          </div>
+          <span class="planning-month-context">${mois.semaines.length} semaine(s) · ${total.sorties} sortie(s)</span>
+        </div>
+        <div class="planning-month-stats">
+          <div class="planning-stat"><div class="planning-stat-label">Charge totale</div><div class="planning-stat-value">${total.charge.toFixed(0)} <span class="planning-stat-note">pts</span></div></div>
+          <div class="planning-stat"><div class="planning-stat-label">Temps réalisé</div><div class="planning-stat-value">${dureeLabel(total.dureeMin)} <span class="planning-stat-note">sur le mois</span></div></div>
+          <div class="planning-stat"><div class="planning-stat-label">Distance</div><div class="planning-stat-value">${total.distanceKm.toFixed(0)} km <span class="planning-stat-note">${total.sorties} sortie(s)</span></div></div>
+        </div>
+        <div class="planning-table-wrap">
+          <table class="planning-table">
+            <thead><tr><th>Semaine</th><th>Charge</th><th class="numeric">Durée</th><th class="numeric">Distance</th><th class="numeric">Sorties</th><th></th></tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+        ${detailHtml}`;
+
+      panel.querySelectorAll(".week-row").forEach(row => {
+        row.addEventListener("click", () => toggleSemaine(Number(row.dataset.weekIndex)));
+      });
+      panel.querySelector("#planning-month-select").addEventListener("change", event => {
+        planningMonthIndex = Number(event.target.value);
+        semaineOuverteIdx = null;
+        renderPlanningMonth();
+      });
+      panel.querySelector("#planning-older-month").addEventListener("click", () => {
+        if (planningMonthIndex < planningMonths.length - 1) {
+          planningMonthIndex += 1;
+          semaineOuverteIdx = null;
+          renderPlanningMonth();
+        }
+      });
+      panel.querySelector("#planning-newer-month").addEventListener("click", () => {
+        if (planningMonthIndex > 0) {
+          planningMonthIndex -= 1;
+          semaineOuverteIdx = null;
+          renderPlanningMonth();
+        }
+      });
+      panel.querySelector("#planning-detail-close")?.addEventListener("click", () => {
+        semaineOuverteIdx = null;
+        renderPlanningMonth();
+      });
     }
 
-    // Une seule semaine ouverte à la fois (tous mois confondus) : changer de semaine
-    // referme celle qui était ouverte.
+    function renderPlanningWeekDetail(weekEntry, todayKey) {
+      if (!weekEntry) return "";
+      const [weekKey, s] = weekEntry;
+      const monday = new Date(weekKey + "T12:00:00");
+      const days = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + index);
+        const key = planningDateKey(date);
+        return { date, key, sessions: s.jours.filter(item => item.activity_date === key) };
+      });
+
+      const daysHtml = days.map(day => {
+        const sessionsHtml = day.sessions.length === 0
+          ? '<div class="planning-rest">Repos</div>'
+          : day.sessions.map(session => {
+              const performances = [];
+              if (session.avg_power != null) performances.push(`P moy. ${session.avg_power} W`);
+              if (session.max_power != null) performances.push(`P max. ${session.max_power} W`);
+              if (session.avg_hr != null) performances.push(`FC moy. ${session.avg_hr} bpm`);
+              if (session.max_hr != null) performances.push(`FC max. ${session.max_hr} bpm`);
+              return `
+                <div class="planning-session">
+                  <div class="planning-session-title">${escapeHtml(session.type || "Sortie")}</div>
+                  <div class="planning-session-meta">${dureeLabel(session.duration_min || 0)} · ${Number(session.distance_km || 0).toFixed(1)} km · charge ${Number(session.charge || 0).toFixed(0)}</div>
+                  ${performances.length ? `<div class="planning-session-extra">${performances.join(" · ")}</div>` : ""}
+                </div>`;
+            }).join("");
+        return `
+          <div class="planning-day${day.key === todayKey ? " today" : ""}">
+            <div class="planning-day-head">
+              <span class="planning-day-title">${day.date.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" })}</span>
+              <span class="planning-day-count">${day.sessions.length || "—"}</span>
+            </div>
+            ${sessionsHtml}
+          </div>`;
+      }).join("");
+
+      return `
+        <div class="planning-detail open" id="planning-week-detail">
+          <div class="planning-detail-head">
+            <div><div class="planning-detail-title">${s.label} · ${s.sorties} séance(s)</div><div class="planning-detail-sub">${planningWeekRange(weekKey)} · toutes les activités partagées</div></div>
+            <button class="planning-detail-close" id="planning-detail-close" type="button">Fermer les détails</button>
+          </div>
+          <div class="planning-days">${daysHtml}</div>
+        </div>`;
+    }
+
     function toggleSemaine(idx) {
-      if (semaineOuverteIdx !== null && semaineOuverteIdx !== idx) {
-        document.getElementById(`detail-${semaineOuverteIdx}`)?.classList.remove("open");
-        document.getElementById(`chev-${semaineOuverteIdx}`)?.classList.remove("open");
-      }
-      const wrap = document.getElementById(`detail-${idx}`);
-      const chev = document.getElementById(`chev-${idx}`);
-      const open = wrap.classList.toggle("open");
-      chev.classList.toggle("open", open);
-      semaineOuverteIdx = open ? idx : null;
+      semaineOuverteIdx = semaineOuverteIdx === idx ? null : idx;
+      renderPlanningMonth();
     }
 
     async function rpc(name, token, payload = {}) {
