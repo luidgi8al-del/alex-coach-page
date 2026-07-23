@@ -807,9 +807,9 @@
       const stats = document.createElement("div");
       stats.className = "stat-grid";
       stats.innerHTML = `
-        <div><div class="stat-label">CTL</div><div class="stat-value blue">${dernier.ctl != null ? Math.round(dernier.ctl) : "--"}</div><div class="stat-trend">${trend(dernier.ctl, precedent?.ctl)}</div></div>
-        <div><div class="stat-label">ATL</div><div class="stat-value orange">${dernier.atl != null ? Math.round(dernier.atl) : "--"}</div><div class="stat-trend">${trend(dernier.atl, precedent?.atl)}</div></div>
-        <div><div class="stat-label">TSB <span title="Forme au début de la journée, calculée depuis le CTL et l'ATL de la veille">ⓘ</span></div><div class="stat-value teal">${dernier.tsb != null ? (dernier.tsb >= 0 ? "+" : "") + Math.round(dernier.tsb) : "--"}</div><div class="stat-trend">${tsbLabel}</div></div>
+        <div><div class="stat-label" title="Charge longue">CTL</div><div class="stat-value blue">${dernier.ctl != null ? Math.round(dernier.ctl) : "--"}</div><div class="stat-trend">${trend(dernier.ctl, precedent?.ctl)}</div></div>
+        <div><div class="stat-label" title="Charge aiguë à court terme">ATL</div><div class="stat-value orange">${dernier.atl != null ? Math.round(dernier.atl) : "--"}</div><div class="stat-trend">${trend(dernier.atl, precedent?.atl)}</div></div>
+        <div><div class="stat-label">TSB <span title="Balance entre la charge longue et la charge aiguë">ⓘ</span></div><div class="stat-value teal">${dernier.tsb != null ? (dernier.tsb >= 0 ? "+" : "") + Math.round(dernier.tsb) : "--"}</div><div class="stat-trend">${tsbLabel}</div></div>
         <div><div class="stat-label">Date</div><div class="stat-value" style="font-size:13px">${jourLabel(dernier.date)}</div></div>
       `;
       panel.appendChild(stats);
@@ -819,9 +819,9 @@
       card.innerHTML = `
         <h3>Forme au fil du temps (90 jours)</h3>
         <div class="legend">
-          <span><span class="dot" style="background:var(--blue)"></span>CTL (fitness)</span>
-          <span><span class="dot" style="background:var(--orange)"></span>ATL (fatigue)</span>
-          <span><span class="dot" style="background:var(--teal)"></span>TSB (forme)</span>
+          <span><span class="dot" style="background:var(--blue)"></span>CTL (charge longue)</span>
+          <span><span class="dot" style="background:var(--orange)"></span>ATL (charge aiguë / courte)</span>
+          <span><span class="dot" style="background:var(--teal)"></span>TSB (balance)</span>
         </div>
         <canvas id="chart-forme" width="900" height="250"></canvas>
         <div class="chart-detail" id="chart-forme-detail" aria-live="polite">Survole la courbe pour voir un jour précis.</div>
