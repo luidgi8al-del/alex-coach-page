@@ -295,17 +295,88 @@
     .planning-table th, .planning-table td { padding: 8px 7px; }
   }
   .foot { max-width: 680px; margin: 18px auto 0; padding: 0 16px; font-size: 11.5px; color: var(--text-hint); }
-  .santé-row {
+  .health-toolbar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    border-top: 0.5px solid var(--border-light);
-    font-size: 13px;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
   }
-  .santé-row:first-child { border-top: none; }
-  .santé-row .santé-date { color: var(--text-muted); }
-  .santé-row .santé-values { display: flex; gap: 16px; font-weight: 600; }
+  .health-periods { display: flex; gap: 6px; flex-wrap: wrap; }
+  .health-period {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-muted);
+    border-radius: 16px;
+    padding: 6px 11px;
+    font: inherit;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .health-period.active { border-color: var(--teal); background: var(--teal-light-bg); color: var(--teal); }
+  .health-range { color: var(--text-muted); font-size: 10.5px; }
+  .health-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+  .health-stat { margin: 0; padding: 11px 14px; }
+  .health-stat-label { color: var(--text-muted); font-size: 10.5px; }
+  .health-stat-value { font-size: 20px; font-weight: 600; margin: 3px 0; }
+  .health-stat-context { display: flex; flex-wrap: wrap; gap: 5px 14px; color: var(--text-muted); font-size: 10px; }
+  .health-stat-context strong { color: var(--text-primary); font-weight: 600; }
+  .health-chart-card { display: grid; gap: 7px; margin-bottom: 10px; padding: 11px 14px 8px; }
+  .health-chart-head, .health-chart-meta, .health-signals-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .health-chart-title { font-size: 13px; font-weight: 600; }
+  .health-chart-sub, .health-chart-meta { color: var(--text-muted); font-size: 10px; }
+  .health-chart-meta { flex-wrap: wrap; }
+  .health-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; }
+  .health-legend-item { display: inline-flex; align-items: center; gap: 5px; }
+  .health-legend-line { width: 18px; height: 3px; background: var(--teal); }
+  .health-legend-line.heart { background: #D4537E; }
+  .health-legend-band { width: 18px; height: 9px; background: var(--teal-light-bg); }
+  .health-tsb-badge { background: var(--teal-light-bg); color: var(--teal); border-radius: 14px; padding: 5px 9px; font-size: 10px; white-space: nowrap; }
+  .health-chart-svg { display: block; width: 100%; height: auto; max-height: 300px; }
+  .health-chart-svg .grid { stroke: var(--border); stroke-width: 1; }
+  .health-chart-svg .band { fill: var(--teal-light-bg); }
+  .health-chart-svg .reference { stroke: var(--text-hint); stroke-width: 1; stroke-dasharray: 5 5; }
+  .health-chart-svg .sleep-line, .health-chart-svg .heart-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .health-chart-svg .sleep-line { stroke: var(--teal); }
+  .health-chart-svg .heart-line { stroke: #D4537E; }
+  .health-chart-svg .sleep-point { fill: var(--teal); }
+  .health-chart-svg .heart-point { fill: #D4537E; }
+  .health-chart-svg text { fill: var(--text-muted); font-size: 10px; }
+  .health-chart-svg .axis-title, .health-chart-svg .latest { fill: var(--text-primary); font-weight: 600; }
+  .health-signals { margin-top: 2px; }
+  .health-signals-title { font-size: 13px; font-weight: 600; }
+  .health-signals-sub { color: var(--text-muted); font-size: 10px; margin-top: 2px; }
+  .health-signals-toggle {
+    border: 1px solid var(--teal);
+    background: #fff;
+    color: var(--teal);
+    border-radius: 7px;
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .health-signals-toggle:disabled { border-color: var(--border); color: var(--text-hint); cursor: default; }
+  .health-signals-details { display: none; margin-top: 8px; }
+  .health-signals-details.open { display: block; }
+  .health-rule { color: var(--text-muted); font-size: 10px; margin-bottom: 5px; }
+  .health-signal-table { width: 100%; border-collapse: collapse; }
+  .health-signal-table th { color: var(--text-muted); font-size: 9.5px; font-weight: 500; text-align: left; padding: 6px 8px; }
+  .health-signal-table td { border-top: 1px solid var(--border-light); font-size: 10.5px; padding: 7px 8px; }
+  .health-signal-table .numeric { text-align: right; white-space: nowrap; }
+  .health-signal-reading { color: var(--text-muted); }
+  @media (max-width: 620px) {
+    .health-toolbar, .health-chart-head, .health-signals-head { align-items: flex-start; flex-direction: column; }
+    .health-stat-grid { grid-template-columns: 1fr; }
+    .health-signal-table th:nth-child(3), .health-signal-table td:nth-child(3) { display: none; }
+  }
 
   .chart-detail {
     font-size: 12px;
@@ -1284,53 +1355,233 @@
       });
     }
 
+    let santePeriode = 28;
+    let santeDetailsOuverts = false;
+    let santeMetricsCache = [];
+
+    function moyenneSante(rows, key) {
+      const values = rows
+        .map(row => row[key])
+        .filter(value => value != null)
+        .map(Number)
+        .filter(Number.isFinite);
+      return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+    }
+
+    function formatSommeilCoach(value) {
+      if (!Number.isFinite(value)) return "—";
+      const heures = Math.floor(value);
+      const minutes = Math.round((value - heures) * 60);
+      return `${heures} h ${String(minutes).padStart(2, "0")}`;
+    }
+
+    function formatDateSante(value) {
+      return new Date(value + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+    }
+
+    function santeDernierIndex(rows, key) {
+      for (let index = rows.length - 1; index >= 0; index -= 1) {
+        if (rows[index][key] != null && Number.isFinite(Number(rows[index][key]))) return index;
+      }
+      return -1;
+    }
+
+    function cheminSante(rows, key, xFor, yFor) {
+      let path = "";
+      let enCours = false;
+      rows.forEach((row, index) => {
+        const value = Number(row[key]);
+        if (row[key] == null || !Number.isFinite(value)) {
+          enCours = false;
+          return;
+        }
+        path += `${enCours ? " L" : " M"} ${xFor(index).toFixed(1)} ${yFor(value).toFixed(1)}`;
+        enCours = true;
+      });
+      return path.trim();
+    }
+
+    function texteSvgSante(x, y, text, classe = "", anchor = "start") {
+      return `<text x="${x}" y="${y}" class="${classe}" text-anchor="${anchor}">${text}</text>`;
+    }
+
+    function renderGraphiqueSante(rows, sleepReference, heartReference) {
+      const svg = document.getElementById("health-trend-chart");
+      const left = 60;
+      const right = 940;
+      const topSleep = 35;
+      const bottomSleep = 125;
+      const topHeart = 175;
+      const bottomHeart = 265;
+      const xFor = index => rows.length === 1 ? left : left + index / (rows.length - 1) * (right - left);
+      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+      const sleepY = value => clamp(bottomSleep - (value - 5.5) / 4 * (bottomSleep - topSleep), topSleep, bottomSleep);
+      const heartY = value => clamp(bottomHeart - (value - 38) / 14 * (bottomHeart - topHeart), topHeart, bottomHeart);
+      const latestSleepIndex = santeDernierIndex(rows, "sleep_hours");
+      const latestHeartIndex = santeDernierIndex(rows, "resting_hr");
+      const latestSleep = latestSleepIndex >= 0 ? Number(rows[latestSleepIndex].sleep_hours) : null;
+      const latestHeart = latestHeartIndex >= 0 ? Number(rows[latestHeartIndex].resting_hr) : null;
+      const dateIndexes = [...new Set([0, Math.floor((rows.length - 1) / 2), rows.length - 1])];
+
+      const sleepGrid = [6, 7.5, 9].map(value => `
+        <line class="grid" x1="${left}" y1="${sleepY(value)}" x2="${right}" y2="${sleepY(value)}"></line>
+        ${texteSvgSante(left - 9, sleepY(value) + 4, String(value).replace(".", ","), "", "end")}
+      `).join("");
+      const heartGrid = [40, 45, 50].map(value => `
+        <line class="grid" x1="${left}" y1="${heartY(value)}" x2="${right}" y2="${heartY(value)}"></line>
+        ${texteSvgSante(left - 9, heartY(value) + 4, value, "", "end")}
+      `).join("");
+      const sleepBand = sleepReference == null ? "" : `
+        <rect class="band" x="${left}" y="${sleepY(sleepReference + .35)}" width="${right - left}" height="${Math.max(1, sleepY(sleepReference - .35) - sleepY(sleepReference + .35))}"></rect>
+        <line class="reference" x1="${left}" y1="${sleepY(sleepReference)}" x2="${right}" y2="${sleepY(sleepReference)}"></line>`;
+      const heartBand = heartReference == null ? "" : `
+        <rect class="band" x="${left}" y="${heartY(heartReference + 2)}" width="${right - left}" height="${Math.max(1, heartY(heartReference - 2) - heartY(heartReference + 2))}"></rect>
+        <line class="reference" x1="${left}" y1="${heartY(heartReference)}" x2="${right}" y2="${heartY(heartReference)}"></line>`;
+
+      svg.innerHTML = `
+        <title>Sommeil et fréquence cardiaque au repos</title>
+        <desc>Deux courbes alignées sur ${rows.length} jours avec les références personnelles calculées sur 28 jours.</desc>
+        ${sleepGrid}${heartGrid}${sleepBand}${heartBand}
+        <path class="sleep-line" d="${cheminSante(rows, "sleep_hours", xFor, sleepY)}"></path>
+        <path class="heart-line" d="${cheminSante(rows, "resting_hr", xFor, heartY)}"></path>
+        ${latestSleep == null ? "" : `<circle class="sleep-point" cx="${xFor(latestSleepIndex)}" cy="${sleepY(latestSleep)}" r="5"></circle>`}
+        ${latestHeart == null ? "" : `<circle class="heart-point" cx="${xFor(latestHeartIndex)}" cy="${heartY(latestHeart)}" r="5"></circle>`}
+        ${texteSvgSante(left, 20, "Sommeil (h)", "axis-title")}
+        ${texteSvgSante(left, 160, "FC repos (bpm)", "axis-title")}
+        ${latestSleep == null ? "" : texteSvgSante(right, 20, `${formatSommeilCoach(latestSleep)} au dernier relevé`, "latest", "end")}
+        ${latestHeart == null ? "" : texteSvgSante(right, 160, `${Math.round(latestHeart)} bpm au dernier relevé`, "latest", "end")}
+        ${dateIndexes.map((index, position) => texteSvgSante(xFor(index), 294, formatDateSante(rows[index].date), "", position === 0 ? "start" : position === dateIndexes.length - 1 ? "end" : "middle")).join("")}
+      `;
+    }
+
+    function updateSanteDetailsToggle(signalCount) {
+      const button = document.getElementById("health-signals-toggle");
+      const details = document.getElementById("health-signals-details");
+      if (!button || !details) return;
+      if (signalCount === 0) santeDetailsOuverts = false;
+      button.disabled = signalCount === 0;
+      button.setAttribute("aria-expanded", String(santeDetailsOuverts));
+      button.textContent = signalCount === 0
+        ? "Aucun jour à vérifier"
+        : santeDetailsOuverts
+          ? "Masquer les jours à vérifier"
+          : `Voir ${signalCount} jour(s) à vérifier`;
+      details.classList.toggle("open", santeDetailsOuverts);
+    }
+
     function renderSante(metricsRows) {
       const panel = document.getElementById("panel-sante");
-      const avecSante = (metricsRows || []).filter(r => r.sleep_hours != null || r.resting_hr != null);
+      santeMetricsCache = metricsRows || [];
+      const avecSante = santeMetricsCache
+        .filter(row => row.sleep_hours != null || row.resting_hr != null)
+        .slice()
+        .sort((a, b) => a.date.localeCompare(b.date));
       if (avecSante.length === 0) {
         panel.innerHTML = '<div class="empty">Pas encore de données de santé partagées.</div>';
         return;
       }
 
+      const rows = avecSante.slice(-santePeriode);
+      const referenceRows = avecSante.slice(-28);
+      const lastSeven = rows.slice(-7);
+      const sleepReference = moyenneSante(referenceRows, "sleep_hours");
+      const heartReference = moyenneSante(referenceRows, "resting_hr");
+      const sleepAverageSeven = moyenneSante(lastSeven, "sleep_hours");
+      const heartAverageSeven = moyenneSante(lastSeven, "resting_hr");
+      const latestSleepIndex = santeDernierIndex(rows, "sleep_hours");
+      const latestHeartIndex = santeDernierIndex(rows, "resting_hr");
+      const latestSleep = latestSleepIndex >= 0 ? Number(rows[latestSleepIndex].sleep_hours) : null;
+      const latestHeart = latestHeartIndex >= 0 ? Number(rows[latestHeartIndex].resting_hr) : null;
+      const completeDays = rows.filter(row => row.sleep_hours != null && row.resting_hr != null).length;
+      const latestTsbRow = santeMetricsCache
+        .filter(row => row.tsb != null)
+        .slice()
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .pop();
+      const latestTsb = latestTsbRow ? Math.round(Number(latestTsbRow.tsb)) : null;
+      const signals = rows.filter(row =>
+        (sleepReference != null && row.sleep_hours != null && Number(row.sleep_hours) < sleepReference - .75) ||
+        (heartReference != null && row.resting_hr != null && Number(row.resting_hr) > heartReference + 4)
+      ).reverse().slice(0, 6);
+
+      const signalRows = signals.map(row => {
+        const readings = [];
+        if (sleepReference != null && row.sleep_hours != null && Number(row.sleep_hours) < sleepReference - .75) {
+          readings.push("Sommeil nettement sous la référence");
+        }
+        if (heartReference != null && row.resting_hr != null && Number(row.resting_hr) > heartReference + 4) {
+          readings.push("FC repos inhabituellement élevée");
+        }
+        return `
+          <tr>
+            <td>${formatDateSante(row.date)}</td>
+            <td class="numeric">${row.sleep_hours == null ? "—" : formatSommeilCoach(Number(row.sleep_hours))}</td>
+            <td class="numeric">${row.resting_hr == null ? "—" : `${Math.round(Number(row.resting_hr))} bpm`}</td>
+            <td class="health-signal-reading">${readings.join(" · ")}</td>
+          </tr>`;
+      }).join("");
+
       panel.innerHTML = `
-        <div class="card">
-          <h3>Sommeil (30 derniers jours)</h3>
-          <canvas id="chart-sommeil" width="600" height="180" style="width:100%;height:150px"></canvas>
-          <div class="chart-detail" id="chart-sommeil-detail">Touche la courbe pour voir un jour précis.</div>
+        <div class="health-toolbar">
+          <div class="health-periods">
+            ${[7, 28, 90].map(days => `<button class="health-period${days === santePeriode ? " active" : ""}" type="button" data-days="${days}">${days} jours</button>`).join("")}
+          </div>
+          <span class="health-range">${formatDateSante(rows[0].date)} — ${formatDateSante(rows[rows.length - 1].date)}</span>
         </div>
-        <div class="card">
-          <h3>FC repos (30 derniers jours)</h3>
-          <canvas id="chart-fcrepos" width="600" height="180" style="width:100%;height:150px"></canvas>
-          <div class="chart-detail" id="chart-fcrepos-detail">Touche la courbe pour voir un jour précis.</div>
+        <div class="health-stat-grid">
+          <div class="card health-stat">
+            <div class="health-stat-label">Sommeil — dernier relevé</div>
+            <div class="health-stat-value">${formatSommeilCoach(latestSleep)}</div>
+            <div class="health-stat-context"><span>Moyenne 7 j : <strong>${formatSommeilCoach(sleepAverageSeven)}</strong></span><span>Référence 28 j : ${formatSommeilCoach(sleepReference)}</span></div>
+          </div>
+          <div class="card health-stat">
+            <div class="health-stat-label">Fréquence cardiaque au repos</div>
+            <div class="health-stat-value">${latestHeart == null ? "—" : `${Math.round(latestHeart)} bpm`}</div>
+            <div class="health-stat-context"><span>Moyenne 7 j : <strong>${heartAverageSeven == null ? "—" : `${Math.round(heartAverageSeven)} bpm`}</strong></span><span>Référence 28 j : ${heartReference == null ? "—" : `${Math.round(heartReference)} bpm`}</span></div>
+          </div>
         </div>
-        <div class="card"><h3>Historique</h3><div id="sante-list"></div></div>
-      `;
+        <div class="card health-chart-card">
+          <div class="health-chart-head">
+            <div><div class="health-chart-title">Évolution et références personnelles</div><div class="health-chart-sub">${completeDays}/${rows.length} jours avec sommeil et FC repos</div></div>
+            <span class="health-tsb-badge">Contexte entraînement : TSB ${latestTsb == null ? "—" : `${latestTsb > 0 ? "+" : ""}${latestTsb}`}</span>
+          </div>
+          <div class="health-chart-meta">
+            <div class="health-legend">
+              <span class="health-legend-item"><span class="health-legend-line"></span>Sommeil</span>
+              <span class="health-legend-item"><span class="health-legend-line heart"></span>FC repos</span>
+              <span class="health-legend-item"><span class="health-legend-band"></span>Référence personnelle</span>
+            </div>
+            <span>Les deux courbes utilisent les mêmes dates.</span>
+          </div>
+          <svg class="health-chart-svg" id="health-trend-chart" viewBox="0 0 1000 300" role="img" aria-label="Sommeil et fréquence cardiaque au repos"></svg>
+        </div>
+        <div class="health-signals">
+          <div class="health-signals-head">
+            <div><div class="health-signals-title">Jours à vérifier</div><div class="health-signals-sub">La liste reste fermée tant que le coach ne la demande pas.</div></div>
+            <button class="health-signals-toggle" id="health-signals-toggle" type="button" aria-expanded="${santeDetailsOuverts}" aria-controls="health-signals-details"></button>
+          </div>
+          <div class="health-signals-details${santeDetailsOuverts ? " open" : ""}" id="health-signals-details">
+            <div class="health-rule">Sommeil inférieur à la référence de 45 min ou FC repos supérieure de 4 bpm.</div>
+            <table class="health-signal-table">
+              <thead><tr><th>Date</th><th class="numeric">Sommeil</th><th class="numeric">FC repos</th><th>Lecture rapide</th></tr></thead>
+              <tbody>${signalRows}</tbody>
+            </table>
+          </div>
+        </div>`;
 
-      const sur30 = avecSante.slice(0, 30).reverse();
-      drawLineChart({
-        canvasId: "chart-sommeil",
-        detailId: "chart-sommeil-detail",
-        rows: sur30,
-        series: [{ key: "sleep_hours", color: "#0F6E56" }],
-        formatDetail: (r) => `<b>${jourLabel(r.date)}</b> — ${r.sleep_hours != null ? r.sleep_hours.toFixed(1) + " h de sommeil" : "pas de donnée"}`
-      });
-      drawLineChart({
-        canvasId: "chart-fcrepos",
-        detailId: "chart-fcrepos-detail",
-        rows: sur30,
-        series: [{ key: "resting_hr", color: "#D4537E" }],
-        formatDetail: (r) => `<b>${jourLabel(r.date)}</b> — ${r.resting_hr != null ? r.resting_hr + " bpm au repos" : "pas de donnée"}`
-      });
+      renderGraphiqueSante(rows, sleepReference, heartReference);
+      updateSanteDetailsToggle(signals.length);
 
-      document.getElementById("sante-list").innerHTML = avecSante.slice(0, 30).map(r => `
-        <div class="santé-row">
-          <span class="santé-date">${jourLabel(r.date)}</span>
-          <span class="santé-values">
-            ${r.sleep_hours != null ? `<span>${r.sleep_hours.toFixed(1)} h</span>` : ""}
-            ${r.resting_hr != null ? `<span>${r.resting_hr} bpm</span>` : ""}
-          </span>
-        </div>
-      `).join("");
+      panel.querySelectorAll(".health-period").forEach(button => {
+        button.addEventListener("click", () => {
+          santePeriode = Number(button.dataset.days);
+          renderSante(santeMetricsCache);
+        });
+      });
+      panel.querySelector("#health-signals-toggle").addEventListener("click", () => {
+        santeDetailsOuverts = !santeDetailsOuverts;
+        updateSanteDetailsToggle(signals.length);
+      });
     }
 
     let semaineOuverteIdx = null;
